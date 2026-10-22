@@ -16,13 +16,14 @@ deviations log at the end of this file.
 | eval sets | 500 questions each: SQuAD, NewsQA, TriviaQA (ID); BioASQ, DuoRC (OOD) |
 | metrics | EM, token F1 (official MRQA normalisation); 95% bootstrap CIs; paired bootstrap for comparisons |
 | seeds | RQ1: 1 seed; RQ2: 3 seeds (0, 1, 2) |
+| A100 profile | `configs/a100.yaml`: 16 sequences/step as 16×1 micro-batches, bf16; RQ1 budgets 0.25M/1M/4M/16M; RQ2 at 4M tokens; 1,000 questions per eval set; RQ3 batch sizes 1–256; four tiny-Transformer sizes at 50M tokens |
 
 ## RQ1 — Training efficiency
 
 * **H1a.** Even the smallest budget (0.25M tokens) improves F1 over the best prompting
   baseline on every ID set. *Prediction:* +15 F1 or more on SQuAD, mainly by removing verbose answers.
 * **H1b.** Returns diminish: F1 is roughly linear in log(tokens). *Prediction:* going from 1M to 4M
-  tokens adds less than half the F1 gained from 0.25M to 1M.
+  tokens adds less than half the F1 gained from 0.25M to 1M (A100 profile: 4M to 16M adds less still).
 * **H1c.** Dev answer-loss decreases monotonically with budget and ranks the runs the same way as dev-set F1.
 * **H1d.** Training cost scales linearly with tokens. *Prediction:* tokens/s stays within ±10% across budgets.
 

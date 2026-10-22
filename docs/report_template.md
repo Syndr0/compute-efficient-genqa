@@ -78,10 +78,11 @@ additionally ablates length sorting, the KV cache and fp32 weights.
 ## 5. Limitations
 
 * One base model (Qwen3-0.6B), one LoRA configuration and one prompt; conclusions may not transfer to other sizes or adapters.
-* Token budgets up to 4M are small relative to the full MRQA training sets; larger budgets may change the RQ2 picture.
-* Evaluation is capped at 500 questions per set, so differences of ~2 F1 points are near the resolution of the CIs.
+* Token budgets (≤ 4M on the T4 profile, ≤ 16M on the A100 profile) are small relative to the full MRQA training sets; larger budgets may change the RQ2 picture.
+* Evaluation is capped at 500 (T4) or 1,000 (A100) questions per set, so differences of ~1–2 F1 points are near the resolution of the CIs.
 * EM/F1 penalise correct paraphrases; BioASQ in particular has many valid surface forms.
 * Overlap checks are exact-match; near-duplicate passages are not detected.
+* Batch sizes, budgets and timings depend on the GPU profile (`configs/a100.yaml` on A100); compare costs only within one profile.
 * RQ3 uses HuggingFace `generate` without a dedicated serving engine (vLLM, paged attention), so absolute throughput is a lower bound.
 * GPU cost is wall-clock on shared Colab hardware and includes data-loader / Python overhead.
 

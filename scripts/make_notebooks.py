@@ -28,6 +28,7 @@ SETUP = code(f'''
 #@markdown disconnected runtime can resume: every stage skips work that is already saved.
 USE_DRIVE = True  #@param {{type:"boolean"}}
 SMOKE_TEST = False  #@param {{type:"boolean"}}
+GPU_PROFILE = "auto"  #@param ["auto", "t4", "a100"]
 import os, sys
 REPO_DIR = "/content/compute-efficient-genqa"
 if not os.path.exists(REPO_DIR):
@@ -43,18 +44,26 @@ if USE_DRIVE:
     OUT = "/content/drive/MyDrive/cegqa_outputs"
 else:
     OUT = "/content/cegqa_outputs"
+import torch
+GPU = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu"
+if GPU_PROFILE == "auto":
+    GPU_PROFILE = "a100" if any(k in GPU for k in ("A100", "H100")) else "t4"
+CONFIG_FILES = ["configs/default.yaml"]
+if GPU_PROFILE == "a100":
+    CONFIG_FILES.append("configs/a100.yaml")
+    OUT += "_a100"  # different budgets/sizes: keep results of the two profiles apart
 if SMOKE_TEST:
+    CONFIG_FILES.append("configs/smoke.yaml")
     OUT += "_smoke"
 os.environ["CEGQA_OUTPUT_DIR"] = OUT
-CONFIG = "--config configs/default.yaml" + (" --config configs/smoke.yaml" if SMOKE_TEST else "")
-print("outputs ->", OUT)
-!nvidia-smi --query-gpu=name,memory.total --format=csv
+CONFIG = " ".join(f"--config {{f}}" for f in CONFIG_FILES)
+print(f"GPU: {{GPU}} | profile: {{GPU_PROFILE}} | outputs -> {{OUT}}")
+print("configs:", CONFIG_FILES)
 ''')
 
 LOAD_CFG = code('''
 from cegqa.utils import load_config
-cfgs = ["configs/default.yaml"] + (["configs/smoke.yaml"] if SMOKE_TEST else [])
-cfg = load_config(cfgs)
+cfg = load_config(CONFIG_FILES)
 ''')
 
 PREPARE = code("!python -m cegqa.cli prepare $CONFIG")
@@ -330,7 +339,8 @@ files.download("/content/cegqa_results.zip")
 
 Runs every stage in order (data → baselines → RQ1 → RQ2 → RQ3 → tiny Transformer → report).
 Tick `SMOKE_TEST` for a ~10-minute end-to-end check on a handful of examples.
-Full run: about 2–3 h on a T4 (less on L4/A100). Every stage resumes from what is already on Drive,
+Full run: about 2–3 h on a T4, or 1.5–2 h on an A100 with the larger A100 profile
+(`configs/a100.yaml`, picked automatically when an A100/H100 is attached). Every stage resumes from what is already on Drive,
 so after a disconnect just run the cells again.
 """),
         SETUP,

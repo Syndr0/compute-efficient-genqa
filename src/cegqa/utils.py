@@ -127,6 +127,8 @@ def get_device():
     import torch
 
     if torch.cuda.is_available():
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
         return torch.device("cuda")
     # Opt-in only: on Apple MPS, batched generation with left padding yields NaN logits for padded rows.
     if os.environ.get("CEGQA_USE_MPS") == "1" and torch.backends.mps.is_available():

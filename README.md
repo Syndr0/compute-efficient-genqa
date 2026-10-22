@@ -23,8 +23,15 @@ Project proposal: [docs/proposal.pdf](docs/proposal.pdf). Hypotheses and quantit
 
 ## Run on Google Colab
 
-Pick a GPU runtime (**Runtime → Change runtime type → T4 GPU**), open a notebook, and run all cells.
-Outputs go to `MyDrive/cegqa_outputs`, and every stage resumes from what is already saved there.
+Pick a GPU runtime (**Runtime → Change runtime type**), open a notebook, and run all cells.
+Every stage resumes from what is already saved on Drive.
+
+| GPU | profile (auto-detected) | budgets (RQ1) | RQ2 budget | eval questions / set | outputs | full run |
+|---|---|---|---|---|---|---|
+| T4 (free tier) | `configs/default.yaml` | 0.25M, 1M, 4M | 1M | 500 | `MyDrive/cegqa_outputs` | ~2.5 h |
+| A100 / H100 (Pro) | `default.yaml` + `configs/a100.yaml` | 0.25M, 1M, 4M, 16M | 4M | 1,000 | `MyDrive/cegqa_outputs_a100` | ~1.5–2 h |
+
+Times in the notebook table below are for the T4 profile.
 
 | Notebook | Owner | What it does | T4 time |
 |---|---|---|---|
