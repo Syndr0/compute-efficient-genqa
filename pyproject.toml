@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cegqa"
+version = "0.1.0"
+description = "Compute-efficient generative question answering: Qwen3-0.6B + LoRA on MRQA"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+  "torch>=2.1",
+  "transformers>=4.51",
+  "peft>=0.13",
+  "tokenizers>=0.19",
+  "huggingface_hub>=0.23",
+  "pyarrow>=14",
+  "fsspec",
+  "numpy",
+  "pyyaml",
+  "matplotlib",
+  "tqdm",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

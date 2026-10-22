@@ -1,0 +1,101 @@
+# Fixed experimental configuration (pre-registered in docs/hypotheses.md).
+# Sized for a single Colab T4 (16 GB); total wall-clock is roughly 2-3 GPU-hours.
+# Override any value from the CLI, e.g.  --set rq1.token_budgets=[250000,1000000]
+
+output_dir: outputs            # overridden by $CEGQA_OUTPUT_DIR (the notebooks point it at Google Drive)
+
+model:
+  name: Qwen/Qwen3-0.6B
+  max_context_tokens: 768      # passage truncation (Qwen tokens); MRQA passages are <= 800 words
+  max_new_tokens: 32
+  inference_dtype: auto        # auto = bf16 if supported, else fp16 (T4); set fp32 if fp16 ever misbehaves
+
+data:
+  hf_dataset: mrqa-workshop/mrqa
+  train_sources: [squad, newsqa, triviaqa]   # MRQA train split
+  id_eval_sources: [squad, newsqa, triviaqa] # MRQA validation split (in-domain)
+  ood_eval_sources: [bioasq, duorc]          # MRQA test split (held out, out-of-domain)
+  max_train_per_source: 50000
+  dev_per_source: 300          # held-out contexts from MRQA train -> validation loss
+  eval_per_source: 1000        # stored eval items per source (after overlap filtering)
+  drop_overlaps: true          # remove eval items whose passage appears in a training pool
+  num_fewshot: 3
+  fewshot_max_context_words: 120
+  seed: 13
+
+eval:
+  batch_size: 32
+  max_examples_per_source: 500 # evaluated items per eval set (null = all stored items)
+
+baselines:
+  modes: [zero_shot, few_shot]
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+train:
+  lr: 2.0e-4
+  micro_batch_size: 4
+  grad_accum: 4                # 16 sequences per optimizer step
+  warmup_ratio: 0.05
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  gradient_checkpointing: false
+  log_every_steps: 10
+  num_evals: 6                 # dev-loss evaluations per run (plus one at step 0)
+  dev_examples_per_source: 100
+
+# RQ1: QA quality vs LoRA training-token budget (multi-source mixture, one pass per budget)
+rq1:
+  sources: [squad, newsqa, triviaqa]
+  token_budgets: [250000, 1000000, 4000000]
+  seeds: [0]
+
+# RQ2: single- vs multi-source at a fixed budget (the multi-source seed-0 run is shared with RQ1)
+rq2:
+  token_budget: 1000000
+  seeds: [0, 1, 2]
+  conditions:
+    single: [squad]
+    multi: [squad, newsqa, triviaqa]
+
+# RQ3: inference efficiency of the fine-tuned model
+rq3:
+  adapter_run: auto            # auto = largest-budget multi-source seed-0 adapter; or a run name; or "base"
+  source: squad
+  num_examples: 256
+  batch_sizes: [1, 2, 4, 8, 16, 32, 64]
+  repeats: 3
+  sort_ablation: true
+  kv_cache_off_batch_sizes: [1, 8]   # optional KV-cache experiment (on a smaller subset)
+  kv_cache_subset_examples: 64
+  extra_dtypes: [fp32]
+  extra_dtype_batch_sizes: [1, 16]
+
+stats:
+  n_boot: 10000
+
+# P5: decoder-only Transformer from scratch
+tiny:
+  sources: [squad]
+  eval_source: squad
+  max_train_examples: null
+  vocab_size: 8192
+  max_seq_len: 512
+  answer_reserve_tokens: 24
+  token_budget: 20000000
+  batch_size: 32
+  lr: 6.0e-4
+  dropout: 0.0
+  loss_on: all                 # all | answer
+  num_ce_points: 8             # log-spaced validation points between budget/64 and budget
+  num_ce_points_ratio: 64
+  gen_eval_examples: 500
+  seed: 0
+  models:
+    - {name: tiny-128x2, d_model: 128, n_layers: 2, n_heads: 4}
+    - {name: small-256x4, d_model: 256, n_layers: 4, n_heads: 4}
+    - {name: base-384x8, d_model: 384, n_layers: 8, n_heads: 6}

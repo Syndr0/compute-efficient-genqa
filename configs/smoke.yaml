@@ -1,0 +1,49 @@
+# End-to-end smoke test: layer on top of default.yaml.
+#   python -m cegqa.cli all --config configs/default.yaml --config configs/smoke.yaml
+# Runs every stage on a handful of examples (a few minutes on a Colab GPU; CPU works too).
+
+output_dir: outputs_smoke
+
+data:
+  max_train_per_source: 2000
+  dev_per_source: 20
+  eval_per_source: 16
+
+eval:
+  batch_size: 8
+  max_examples_per_source: 8
+
+train:
+  micro_batch_size: 2
+  grad_accum: 2
+  num_evals: 2
+  log_every_steps: 2
+  dev_examples_per_source: 4
+
+rq1:
+  token_budgets: [10000, 20000]
+
+rq2:
+  token_budget: 10000
+  seeds: [0, 1]
+
+rq3:
+  num_examples: 8
+  batch_sizes: [1, 4]
+  repeats: 1
+  kv_cache_off_batch_sizes: [2]
+  kv_cache_subset_examples: 4
+  extra_dtypes: []
+
+stats:
+  n_boot: 500
+
+tiny:
+  max_train_examples: 2000
+  token_budget: 200000
+  batch_size: 16
+  num_ce_points: 3
+  num_ce_points_ratio: 8
+  gen_eval_examples: 16
+  models:
+    - {name: tiny-64x2, d_model: 64, n_layers: 2, n_heads: 2}
