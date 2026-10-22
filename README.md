@@ -7,7 +7,7 @@
 
 Official code, configurations and results for the paper
 **"How Far Can 0.6B Parameters Go? Compute-Efficient Generative Question Answering with LoRA Fine-Tuning"**
-(EN.737 Large Language Models course project, NeurIPS 2026 preprint format).
+(EN.737 Large Language Models course project).
 
 We adapt **Qwen3-0.6B** with **LoRA** to context-grounded question answering on **MRQA** under exact
 training-token budgets and study training efficiency (RQ1), out-of-domain generalization (RQ2) and inference
