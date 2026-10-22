@@ -1,6 +1,6 @@
 # A100 profile: layer on top of default.yaml (the notebooks add it automatically on A100/H100).
 #   python -m cegqa.cli all --config configs/default.yaml --config configs/a100.yaml
-# bf16 end to end; larger micro-batches with the same effective batch (16 sequences/step), so
+# bf16 end to end; larger micro-batches (8x2) with the same effective batch (16 sequences/step), so
 # optimisation matches the T4 profile; larger token budgets, 1,000 eval questions per set, a wider
 # RQ3 sweep and a fourth tiny-Transformer size. Roughly 1.5-2 GPU-hours on an A100 40 GB.
 
@@ -9,8 +9,8 @@ eval:
   max_examples_per_source: 1000
 
 train:
-  micro_batch_size: 16
-  grad_accum: 1
+  micro_batch_size: 8          # 16 x ~900-token sequences exceeds 40 GB of activations
+  grad_accum: 2
   num_evals: 8
 
 rq1:

@@ -7,6 +7,10 @@ Stages: prepare, baselines, rq1, rq2, rq3, tiny, report, all
 from __future__ import annotations
 
 import argparse
+import os
+
+# reduce CUDA memory fragmentation from variable-length batches (must be set before torch initialises CUDA)
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 from .experiments import STAGES
 from .utils import REPO_ROOT, load_config

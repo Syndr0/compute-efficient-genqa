@@ -16,7 +16,7 @@ deviations log at the end of this file.
 | eval sets | 500 questions each: SQuAD, NewsQA, TriviaQA (ID); BioASQ, DuoRC (OOD) |
 | metrics | EM, token F1 (official MRQA normalisation); 95% bootstrap CIs; paired bootstrap for comparisons |
 | seeds | RQ1: 1 seed; RQ2: 3 seeds (0, 1, 2) |
-| A100 profile | `configs/a100.yaml`: 16 sequences/step as 16×1 micro-batches, bf16; RQ1 budgets 0.25M/1M/4M/16M; RQ2 at 4M tokens; 1,000 questions per eval set; RQ3 batch sizes 1–256; four tiny-Transformer sizes at 50M tokens |
+| A100 profile | `configs/a100.yaml`: 16 sequences/step as 8×2 micro-batches, bf16; RQ1 budgets 0.25M/1M/4M/16M; RQ2 at 4M tokens; 1,000 questions per eval set; RQ3 batch sizes 1–256; four tiny-Transformer sizes at 50M tokens |
 
 ## RQ1 — Training efficiency
 
