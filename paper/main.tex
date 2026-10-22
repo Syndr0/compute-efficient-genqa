@@ -1,0 +1,168 @@
+\documentclass{article}
+
+\PassOptionsToPackage{numbers, compress}{natbib}
+\usepackage[preprint]{neurips_2026}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+\newcommand{\RQ}[1]{\textbf{RQ#1}}
+
+\title{How Far Can 0.6B Parameters Go?\\Compute-Efficient Generative Question Answering\\with LoRA Fine-Tuning}
+
+\author{%
+  Author One \And Author Two \And Author Three \And Author Four \And Author Five \\
+  EN.737 Large Language Models, Johns Hopkins University \\
+  \texttt{\url{https://github.com/Syndr0/compute-efficient-genqa}}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+%%ABSTRACT%%
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Small generative language models are attractive for question answering (QA) over a provided
+passage: they run on a single commodity GPU, can be adapted cheaply, and produce free-form
+answers without task-specific span-extraction heads. How much compute such adaptation needs,
+how well the adapted model transfers to unseen domains, and how to serve it efficiently are
+practical questions that are rarely answered together under one controlled setup.
+
+We study these questions with \textbf{Qwen3-0.6B}~\citep{qwen3} adapted by low-rank adaptation
+(LoRA)~\citep{hu2022lora} to context-grounded, single-turn QA on the MRQA benchmark
+collection~\citep{fisch2019mrqa}. Every experiment shares one model, one prompt, one LoRA
+configuration and one evaluation pipeline, and the training data is controlled by an exact
+\emph{training-token budget}. We ask:
+\begin{itemize}
+  \item \RQ{1} (training efficiency): how does QA quality change with the LoRA training-token budget, relative to zero- and few-shot prompting?
+  \item \RQ{2} (generalization): at a fixed budget, does multi-source fine-tuning (SQuAD + NewsQA + TriviaQA) generalize better to unseen domains (BioASQ, DuoRC) than SQuAD-only fine-tuning?
+  \item \RQ{3} (inference efficiency): how does the inference batch size trade throughput against latency and GPU memory for the fine-tuned model?
+\end{itemize}
+Hypotheses and quantitative predictions were fixed before the main runs and are evaluated in
+Appendix~\ref{app:hypotheses}.
+
+%%CONTRIBUTIONS%%
+
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Parameter-efficient adaptation.} LoRA~\citep{hu2022lora} trains low-rank updates to
+frozen weight matrices and is the default way to adapt LLMs on limited hardware; QLoRA~\citep{dettmers2023qlora}
+further quantizes the frozen base. Prior work shows that a small amount of high-quality supervised
+data can suffice to change a model's output behaviour~\citep{zhou2023lima}; we quantify how much
+data is needed for extractive-style QA in terms of training tokens rather than examples.
+
+\paragraph{Generalization in reading comprehension.} The MRQA shared task~\citep{fisch2019mrqa}
+standardised six training and six held-out QA datasets to measure out-of-domain transfer. Training
+on several sources was found to improve robustness of extractive models~\citep{talmor2019multiqa,fisch2019mrqa},
+and multi-format training benefits generative QA models~\citep{khashabi2020unifiedqa,raffel2020t5}.
+These studies typically compare mixtures of different total sizes; we hold the token budget fixed so
+that the comparison isolates data diversity from data quantity.
+
+\paragraph{Compute budgets and inference.} Scaling studies relate loss to parameters and training
+tokens~\citep{kaplan2020scaling,hoffmann2022chinchilla}. For serving, batching amortizes the
+weight reads of memory-bound autoregressive decoding~\citep{pope2023inference}, and systems such as
+Orca~\citep{yu2022orca} and vLLM~\citep{kwon2023vllm} schedule requests dynamically. We measure the
+basic static-batching trade-off that these systems build on.
+
+\section{Experimental setup}
+\label{sec:setup}
+
+\paragraph{Data.} We use the MRQA 2019 versions~\citep{fisch2019mrqa} of SQuAD~\citep{rajpurkar2016squad},
+NewsQA~\citep{trischler2017newsqa} and TriviaQA~\citep{joshi2017triviaqa} (web) for training and
+in-domain (ID) evaluation, and BioASQ~\citep{tsatsaronis2015bioasq} and DuoRC
+(ParaphraseRC)~\citep{saha2018duorc} as out-of-domain (OOD) test sets that are never used for
+training or model selection. Training pools are capped at 50k questions per source. From each pool we
+hold out whole passages (300 questions) as a development set used only for validation loss, so no
+passage appears in both. ID test sets are drawn from the MRQA validation splits and OOD sets from
+the MRQA test split; eval questions whose passage occurs verbatim (after normalisation) in a training
+pool are removed before sub-sampling 1,000 questions per set (Table~\ref{tab:data}). MRQA markup
+tokens are converted to plain text.
+
+\paragraph{Task format and model.} Each input is one chat turn: a system instruction asking for the
+shortest answer span copied from the passage, followed by \texttt{Passage: \dots\ Question: \dots}.
+Qwen3's thinking mode is disabled and passages are truncated to 768 tokens (at test time the head
+of the passage is kept; for training the window is moved to contain the answer). Few-shot prompting
+prepends three fixed short SQuAD training examples as earlier chat turns~\citep{brown2020gpt3}.
+Answers are generated greedily (at most 32 tokens) and the first line is kept.
+
+\paragraph{LoRA fine-tuning under a token budget.} LoRA adapters (rank 16, $\alpha{=}32$, dropout
+0.05) are attached to all attention and MLP projections, giving 10.1M trainable parameters (1.7\% of
+the model). We train with AdamW, learning rate $2{\times}10^{-4}$, 5\% warm-up and cosine decay,
+16 sequences per optimizer step and the loss on answer tokens only. A budget $B$ means that examples
+are drawn without replacement---with an equal token share per source---until their prompt plus answer
+tokens sum to $B$; the model makes a single pass with a schedule fitted to that length. Training cost
+is reported as wall-clock GPU time and estimated FLOPs $\approx 4NT$ for $N$ model parameters and $T$
+tokens (forward plus activation gradients; the frozen base needs no weight gradients).
+\RQ{1} trains on the three-source mixture with $B \in \{0.25, 1, 4, 16\}$M tokens.
+\RQ{2} compares SQuAD-only against the three-source mixture at $B{=}4$M with three seeds (data
+sample and adapter initialisation), sharing all other settings.
+
+\paragraph{Evaluation and statistics.} We report Exact Match (EM) and token-level F1 with the official
+SQuAD/MRQA normalisation, maximised over gold answers. Confidence intervals are 95\% percentile
+bootstrap intervals over questions~\citep{efron1993bootstrap}; system comparisons use a paired
+bootstrap over the same questions~\citep{koehn2004bootstrap} (10,000 resamples), with per-question
+scores averaged over seeds~\citep{dodge2020finetuning}. Errors are categorised automatically
+(\S\ref{sec:rq2}).
+
+\paragraph{Inference benchmark.} \RQ{3} decodes the same 512 SQuAD prompts with the merged
+4M-token adapter in bf16 using HuggingFace \texttt{generate}~\citep{wolf2020transformers}:
+batch sizes 1--256 with length-sorted, left-padded batches and the KV cache on, plus ablations with
+unsorted batches, the KV cache disabled, and fp32/fp16 weights. Each configuration has one
+warm-up batch and three timed repeats; quality is recorded to confirm that batching does not change
+the answers.
+
+\paragraph{Hardware and software.} All final runs used one NVIDIA RTX PRO 6000 Blackwell
+Server Edition GPU (96~GB; Google Colab ``G4'') with PyTorch, Transformers~\citep{wolf2020transformers}
+and PEFT~\citep{peft}. The full pipeline, configurations, per-question predictions and logs are released
+with the paper.
+
+\section{Results}
+\label{sec:results}
+
+%%RESULTS%%
+
+\section{Discussion and limitations}
+\label{sec:discussion}
+
+%%DISCUSSION%%
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+%%CONCLUSION%%
+
+\paragraph{Reproducibility.} All numbers in this paper are produced by
+\texttt{python -m cegqa.cli all --config configs/default.yaml --config configs/a100.yaml}
+from the released repository, which also writes the tables and figures used here. The notebooks in
+\texttt{notebooks/} run the same pipeline on Google Colab.
+
+\paragraph{Author contributions.} P1 built the data and evaluation pipeline (MRQA processing, passage-level
+splits, overlap checks, EM/F1 and prediction logging). P2 built the prompting baselines and the LoRA training
+pipeline with token-budget sampling and cost accounting (\RQ{1}). P3 designed and analysed the generalization
+study, including the paired bootstrap and error analysis (\RQ{2}). P4 built the inference benchmark (\RQ{3}).
+P5 led the analysis, figures and writing. All authors interpreted the results and edited the paper.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+
+%%APPENDIX%%
+
+\end{document}
