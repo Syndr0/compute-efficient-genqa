@@ -47,6 +47,7 @@ train:
   log_every_steps: 10
   num_evals: 6                 # dev-loss evaluations per run (plus one at step 0)
   dev_examples_per_source: 100
+  reuse_across_gpus: false     # retrain finished runs whose timing/cost came from a different GPU type
 
 # RQ1: QA quality vs LoRA training-token budget (multi-source mixture, one pass per budget)
 rq1:

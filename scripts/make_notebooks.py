@@ -46,8 +46,9 @@ else:
     OUT = "/content/cegqa_outputs"
 import torch
 GPU = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu"
-if GPU_PROFILE == "auto":
-    GPU_PROFILE = "a100" if any(k in GPU for k in ("A100", "H100")) else "t4"
+GPU_MEM_GB = torch.cuda.get_device_properties(0).total_memory / 2**30 if torch.cuda.is_available() else 0
+if GPU_PROFILE == "auto":  # large-GPU profile for A100 / H100 / G4 (RTX PRO 6000) and anything with >= 40 GB
+    GPU_PROFILE = "a100" if GPU_MEM_GB >= 39 else "t4"
 CONFIG_FILES = ["configs/default.yaml"]
 if GPU_PROFILE == "a100":
     CONFIG_FILES.append("configs/a100.yaml")
@@ -57,7 +58,7 @@ if SMOKE_TEST:
     OUT += "_smoke"
 os.environ["CEGQA_OUTPUT_DIR"] = OUT
 CONFIG = " ".join(f"--config {{f}}" for f in CONFIG_FILES)
-print(f"GPU: {{GPU}} | profile: {{GPU_PROFILE}} | outputs -> {{OUT}}")
+print(f"GPU: {{GPU}} ({{GPU_MEM_GB:.0f}} GB) | profile: {{GPU_PROFILE}} | outputs -> {{OUT}}")
 print("configs:", CONFIG_FILES)
 ''')
 
@@ -340,7 +341,7 @@ files.download("/content/cegqa_results.zip")
 Runs every stage in order (data → baselines → RQ1 → RQ2 → RQ3 → tiny Transformer → report).
 Tick `SMOKE_TEST` for a ~10-minute end-to-end check on a handful of examples.
 Full run: about 2–3 h on a T4, or 1.5–2 h on an A100 with the larger A100 profile
-(`configs/a100.yaml`, picked automatically when an A100/H100 is attached). Every stage resumes from what is already on Drive,
+(`configs/a100.yaml`, picked automatically for any GPU with ≥ 40 GB: A100, H100, G4). Every stage resumes from what is already on Drive,
 so after a disconnect just run the cells again.
 """),
         SETUP,

@@ -1,4 +1,5 @@
-# A100 profile: layer on top of default.yaml (the notebooks add it automatically on A100/H100).
+# Large-GPU profile (A100 / H100 / G4 RTX PRO 6000; any GPU with >= 40 GB): layer on top of default.yaml.
+# The notebooks add it automatically.
 #   python -m cegqa.cli all --config configs/default.yaml --config configs/a100.yaml
 # bf16 end to end; larger micro-batches (8x2) with the same effective batch (16 sequences/step), so
 # optimisation matches the T4 profile; larger token budgets, 1,000 eval questions per set, a wider

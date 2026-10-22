@@ -29,7 +29,7 @@ Every stage resumes from what is already saved on Drive.
 | GPU | profile (auto-detected) | budgets (RQ1) | RQ2 budget | eval questions / set | outputs | full run |
 |---|---|---|---|---|---|---|
 | T4 (free tier) | `configs/default.yaml` | 0.25M, 1M, 4M | 1M | 500 | `MyDrive/cegqa_outputs` | ~2.5 h |
-| A100 / H100 (Pro) | `default.yaml` + `configs/a100.yaml` | 0.25M, 1M, 4M, 16M | 4M | 1,000 | `MyDrive/cegqa_outputs_a100` | ~1.5–2 h |
+| ≥ 40 GB: A100 / H100 / G4 (Pro) | `default.yaml` + `configs/a100.yaml` | 0.25M, 1M, 4M, 16M | 4M | 1,000 | `MyDrive/cegqa_outputs_a100` | ~1.5–2 h |
 
 Times in the notebook table below are for the T4 profile.
 

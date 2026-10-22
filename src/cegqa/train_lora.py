@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 import random
+import shutil
 import time
 from pathlib import Path
 
@@ -108,8 +109,14 @@ def train_lora(cfg: dict, sources: list[str], token_budget: int, seed: int, runs
     tcfg, mcfg = cfg["train"], cfg["model"]
     run_dir = ensure_dir(Path(runs_dir) / run_name(sources, token_budget, seed))
     if (run_dir / "train_summary.json").exists() and (run_dir / "adapter").exists():
-        print(f"[skip] {run_dir.name} already trained")
-        return run_dir
+        trained_on = read_json(run_dir / "train_summary.json").get("gpu")
+        if trained_on == gpu_info()["gpu"] or tcfg.get("reuse_across_gpus", False):
+            print(f"[skip] {run_dir.name} already trained")
+            return run_dir
+        # timing/cost must come from one GPU type: retrain (and re-evaluate) on the current one
+        print(f"[retrain] {run_dir.name} was trained on {trained_on}; retraining on {gpu_info()['gpu']}")
+        shutil.rmtree(run_dir)
+        run_dir = ensure_dir(run_dir)
     log_path = run_dir / "train_log.jsonl"
     if log_path.exists():
         log_path.unlink()
