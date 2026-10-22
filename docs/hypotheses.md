@@ -16,7 +16,7 @@ deviations log at the end of this file.
 | eval sets | 500 questions each: SQuAD, NewsQA, TriviaQA (ID); BioASQ, DuoRC (OOD) |
 | metrics | EM, token F1 (official MRQA normalisation); 95% bootstrap CIs; paired bootstrap for comparisons |
 | seeds | RQ1: 1 seed; RQ2: 3 seeds (0, 1, 2) |
-| A100 profile | `configs/a100.yaml`: 16 sequences/step as 8×2 micro-batches, bf16; RQ1 budgets 0.25M/1M/4M/16M; RQ2 at 4M tokens; 1,000 questions per eval set; RQ3 batch sizes 1–256; four tiny-Transformer sizes at 50M tokens |
+| A100 profile | `configs/a100.yaml`: 16 sequences/step as 8×2 micro-batches, bf16; RQ1 budgets 0.25M/1M/4M/16M; RQ2 at 4M tokens; 1,000 questions per eval set; RQ3 batch sizes 1–256 |
 
 ## RQ1 — Training efficiency
 
@@ -48,13 +48,9 @@ deviations log at the end of this file.
   waste padding and lower throughput by ≥ 15% at large batch sizes; disabling the KV cache lowers
   throughput by ≥ 2×.
 
-## Tiny Transformer
-
-* **H4a.** Validation CE decreases approximately as a power law in training tokens for each model
-  size, and larger models reach lower CE at the same token count once past the first few million tokens.
-* **H4b.** Despite falling CE, the from-scratch models reach < 10 F1 on SQuAD: 20M tokens and ≤ 20M
-  parameters are far too little to learn reading comprehension, so they produce fluent but ungrounded answers.
-
 ## Deviations log
 
-*(record any change to the frozen configuration here, with the date and reason)*
+* 2026-10-22: added the large-GPU profile (`configs/a100.yaml`) for the final runs, executed on an
+  NVIDIA RTX PRO 6000 Blackwell (Colab G4). RQ2 therefore uses a 4M-token budget and 1,000 questions
+  per eval set instead of 1M / 500; the prediction for H2a applies unchanged.
+* 2026-10-22: the from-scratch tiny-Transformer study was dropped from the project scope.

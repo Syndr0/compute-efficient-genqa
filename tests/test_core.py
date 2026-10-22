@@ -54,22 +54,6 @@ def test_categorize():
     assert categorize({**base, "prediction": "", "em": 0.0, "f1": 0.0}) == "empty"
 
 
-def test_tiny_model_forward():
-    torch = pytest.importorskip("torch")
-    from cegqa.tiny.model import TinyConfig, TinyGPT
-
-    m = TinyGPT(TinyConfig(vocab_size=100, max_seq_len=32, d_model=32, n_layers=2, n_heads=2))
-    out = m(torch.randint(0, 100, (3, 16)))
-    assert out.shape == (3, 16, 100)
-    pc = m.param_counts()
-    assert pc["total"] == pc["non_embedding"] + pc["embedding"]
-    # causality: changing a future token must not change earlier logits
-    x = torch.randint(0, 100, (1, 10))
-    y = x.clone()
-    y[0, -1] = (y[0, -1] + 1) % 100
-    assert torch.allclose(m(x)[0, :-1], m(y)[0, :-1], atol=1e-5)
-
-
 def test_collate_masks_prompt():
     torch = pytest.importorskip("torch")
     from cegqa.train_lora import collate

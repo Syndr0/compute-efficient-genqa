@@ -17,8 +17,6 @@ fine-tuning** on MRQA datasets and ask three questions:
   (SQuAD + NewsQA + TriviaQA) generalize better to unseen domains (BioASQ, DuoRC) than SQuAD-only training?
 * **RQ3 — Inference efficiency.** How does inference batch size affect throughput, latency and GPU memory?
 
-As a reference point we also train **decoder-only Transformers from scratch** (1–20M parameters)
-on the same task and analyse their cross-entropy as a function of parameters and training tokens.
 Hypotheses and quantitative predictions were fixed before the main runs (`docs/hypotheses.md`).
 
 ## 2. Setup
@@ -72,8 +70,6 @@ additionally ablates length sorting, the KV cache and fp32 weights.
 * **RQ3.** Where does throughput saturate, what latency does it cost, and how close does peak
   memory get to the T4's 16 GB? Is quality unchanged across batch sizes (it should be up to
   numerical noise from padding)?
-* **Tiny Transformer.** How does CE scale with parameters and tokens at this scale, and why
-  does a from-scratch model reach near-zero EM despite decreasing CE?
 
 ## 5. Limitations
 

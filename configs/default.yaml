@@ -78,25 +78,3 @@ rq3:
 
 stats:
   n_boot: 10000
-
-# P5: decoder-only Transformer from scratch
-tiny:
-  sources: [squad]
-  eval_source: squad
-  max_train_examples: null
-  vocab_size: 8192
-  max_seq_len: 512
-  answer_reserve_tokens: 24
-  token_budget: 20000000
-  batch_size: 32
-  lr: 6.0e-4
-  dropout: 0.0
-  loss_on: all                 # all | answer
-  num_ce_points: 8             # log-spaced validation points between budget/64 and budget
-  num_ce_points_ratio: 64
-  gen_eval_examples: 500
-  seed: 0
-  models:
-    - {name: tiny-128x2, d_model: 128, n_layers: 2, n_heads: 4}
-    - {name: small-256x4, d_model: 256, n_layers: 4, n_heads: 4}
-    - {name: base-384x8, d_model: 384, n_layers: 8, n_heads: 6}

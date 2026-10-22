@@ -1,4 +1,4 @@
-"""Experiment orchestration for the prompting baselines and RQ1-RQ3, plus the tiny Transformer.
+"""Experiment orchestration for the prompting baselines and RQ1-RQ3.
 
 All stages are resumable: finished training runs, prediction files and benchmark rows are
 detected on disk and skipped, so a disconnected Colab session can simply re-run the cell.
@@ -8,13 +8,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from .data import data_ready, eval_sources, prepare_data
-from .utils import ensure_dir, read_jsonl, write_json
+from .utils import ensure_dir, read_json, read_jsonl, write_json
 
 
 def paths(cfg: dict) -> dict:
     root = Path(cfg["output_dir"])
-    return {"runs": root / "runs", "rq3": root / "rq3", "tiny": root / "tiny", "analysis": root / "analysis",
-            "figures": root / "figures"}
+    return {"runs": root / "runs", "rq3": root / "rq3", "analysis": root / "analysis", "figures": root / "figures"}
 
 
 def stage_prepare(cfg: dict, force: bool = False) -> None:
@@ -78,6 +77,9 @@ def rq2_statistics(cfg: dict) -> dict:
 
     r = cfg["rq2"]
     runs = paths(cfg)["runs"]
+    saved = paths(cfg)["analysis"] / "rq2_stats.json"
+    if saved.exists() and not any(runs.glob("lora_*/predictions/*.jsonl")):
+        return read_json(saved)  # exported results bundle without per-question predictions
     conds = list(r["conditions"])
     assert len(conds) == 2, "RQ2 compares exactly two conditions"
     base, treat = conds
@@ -118,17 +120,11 @@ def rq2_statistics(cfg: dict) -> dict:
     return report
 
 
-# --------------------------------------------------------------------------- RQ3 / tiny
+# --------------------------------------------------------------------------- RQ3
 def stage_rq3(cfg: dict) -> list[dict]:
     from .inference_bench import run_inference_bench
 
     return run_inference_bench(cfg, paths(cfg)["runs"], paths(cfg)["rq3"])
-
-
-def stage_tiny(cfg: dict) -> list[dict]:
-    from .tiny.train import train_tiny
-
-    return train_tiny(cfg, paths(cfg)["tiny"])
 
 
 def stage_report(cfg: dict) -> Path:
@@ -143,6 +139,5 @@ STAGES = {
     "rq1": stage_rq1,
     "rq2": stage_rq2,
     "rq3": stage_rq3,
-    "tiny": stage_tiny,
     "report": stage_report,
 }

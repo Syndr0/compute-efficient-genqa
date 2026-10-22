@@ -3,7 +3,7 @@
 #   python -m cegqa.cli all --config configs/default.yaml --config configs/a100.yaml
 # bf16 end to end; larger micro-batches (8x2) with the same effective batch (16 sequences/step), so
 # optimisation matches the T4 profile; larger token budgets, 1,000 eval questions per set, a wider
-# RQ3 sweep and a fourth tiny-Transformer size. Roughly 1.5-2 GPU-hours on an A100 40 GB.
+# RQ3 sweep. Roughly 1.5-2 GPU-hours on an A100 40 GB.
 
 eval:
   batch_size: 64
@@ -26,12 +26,3 @@ rq3:
   kv_cache_off_batch_sizes: [1, 8, 32]
   extra_dtypes: [fp32, fp16]
   extra_dtype_batch_sizes: [1, 32]
-
-tiny:
-  token_budget: 50000000
-  batch_size: 64
-  models:
-    - {name: tiny-128x2, d_model: 128, n_layers: 2, n_heads: 4}
-    - {name: small-256x4, d_model: 256, n_layers: 4, n_heads: 4}
-    - {name: base-384x8, d_model: 384, n_layers: 8, n_heads: 6}
-    - {name: large-512x8, d_model: 512, n_layers: 8, n_heads: 8}

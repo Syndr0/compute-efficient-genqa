@@ -2,7 +2,8 @@
 
 Writes to <output_dir>:
   analysis/summary.json   all numbers in one machine-readable file
-  figures/*.png           learning curves, budget/cost curves, RQ2 bars, RQ3 sweeps, tiny CE curves
+  figures/*.{png,pdf}     learning curves, budget/cost curves, RQ2 bars, RQ3 sweeps
+  tables/*.tex            LaTeX tables for the paper
   report.md               docs/report_template.md with the generated results section filled in
 """
 from __future__ import annotations
@@ -12,6 +13,7 @@ from pathlib import Path
 from .data import eval_sources
 from .experiments import paths, rq2_statistics
 from .train_lora import run_name
+from .latex import write_tables
 from .utils import REPO_ROOT, ensure_dir, fmt_tokens, read_json, read_jsonl, write_json
 
 # Validated categorical order (blue, orange, aqua, yellow, magenta, green, violet, red); never cycled.
@@ -42,6 +44,11 @@ def _token_axis(ax) -> None:
     ax.set_xscale("log")
     ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: fmt_tokens(v)))
     ax.xaxis.set_minor_formatter(NullFormatter())
+
+
+def _save(fig, figs: Path, name: str) -> None:
+    fig.savefig(figs / f"{name}.png")
+    fig.savefig(figs / f"{name}.pdf")
 
 
 def _name(s: str) -> str:
@@ -139,7 +146,7 @@ def section_baselines_rq1(cfg: dict, plt, figs: Path, summary: dict) -> str:
             ax.set_title(f"{metric.upper()} vs training-token budget")
         axes[1].legend(fontsize=8, title="eval set\n(dotted: zero-shot,\ndashed: few-shot)", title_fontsize=7,
                        loc="upper left", bbox_to_anchor=(1.02, 1))
-        fig.savefig(figs / "rq1_budget_curves.png")
+        _save(fig, figs, "rq1_budget_curves")
         plt.close(fig)
 
         # dev-loss learning curves
@@ -153,7 +160,7 @@ def section_baselines_rq1(cfg: dict, plt, figs: Path, summary: dict) -> str:
         ax.set_ylabel("dev answer loss (nats/token)")
         ax.set_title("Validation loss during LoRA SFT")
         ax.legend(fontsize=8, title="budget", loc="upper left", bbox_to_anchor=(1.02, 1))
-        fig.savefig(figs / "rq1_dev_loss.png")
+        _save(fig, figs, "rq1_dev_loss")
         plt.close(fig)
 
         # quality vs GPU cost (mean F1 over ID and OOD sets)
@@ -168,7 +175,7 @@ def section_baselines_rq1(cfg: dict, plt, figs: Path, summary: dict) -> str:
         ax.set_ylabel("mean F1 (%)")
         ax.set_title("Quality vs training compute")
         ax.legend(fontsize=8)
-        fig.savefig(figs / "rq1_f1_vs_gpu_minutes.png")
+        _save(fig, figs, "rq1_f1_vs_gpu_minutes")
         plt.close(fig)
         lines.append("![RQ1 budget curves](figures/rq1_budget_curves.png)\n\n"
                      "![RQ1 dev loss](figures/rq1_dev_loss.png) ![RQ1 cost](figures/rq1_f1_vs_gpu_minutes.png)")
@@ -209,7 +216,7 @@ def section_rq2(cfg: dict, plt, figs: Path, summary: dict) -> str:
     ax.set_ylabel("F1 (%)")
     ax.set_title("Single- vs multi-source LoRA at equal token budget")
     ax.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.02, 1))
-    fig.savefig(figs / "rq2_f1_bars.png")
+    _save(fig, figs, "rq2_f1_bars")
     plt.close(fig)
 
     from .error_analysis import CATEGORIES
@@ -296,7 +303,7 @@ def section_rq3(cfg: dict, plt, figs: Path, summary: dict) -> str:
             ax.set_xlabel("batch size")
             ax.set_title(t)
         fig.subplots_adjust(wspace=0.35)
-        fig.savefig(figs / "rq3_batch_sweep.png")
+        _save(fig, figs, "rq3_batch_sweep")
         plt.close(fig)
 
         fig, ax = plt.subplots(figsize=(5, 3.4))
@@ -308,41 +315,9 @@ def section_rq3(cfg: dict, plt, figs: Path, summary: dict) -> str:
         ax.set_xlabel("latency per request (ms)")
         ax.set_ylabel("throughput (examples/s)")
         ax.set_title("Throughput-latency trade-off")
-        fig.savefig(figs / "rq3_tradeoff.png")
+        _save(fig, figs, "rq3_tradeoff")
         plt.close(fig)
         lines.append("![RQ3 sweep](figures/rq3_batch_sweep.png) ![RQ3 trade-off](figures/rq3_tradeoff.png)")
-    return "\n\n".join(lines)
-
-
-def section_tiny(cfg: dict, plt, figs: Path, summary: dict) -> str:
-    tdir = paths(cfg)["tiny"]
-    lines = ["### Tiny Transformer trained from scratch"]
-    sums = [read_json(d / "summary.json") for d in sorted(tdir.glob("*/")) if (d / "summary.json").exists()]
-    if not sums:
-        return "\n\n".join(lines + ["_No results yet._"])
-    summary["tiny"] = sums
-    rows = [[s["name"], f"{s['d_model']}×{s['n_layers']}L×{s['n_heads']}H", f"{s['params']['total'] / 1e6:.2f}M",
-             f"{s['params']['non_embedding'] / 1e6:.2f}M", f"{s['tokens'] / 1e6:.1f}M", f"{s['tokens_per_param']:.1f}",
-             f"{s['est_train_flops']:.2e}", f"{s['train_time_s'] / 60:.1f}", f"{s['final_val_ce']:.3f}",
-             f"{s['final_val_answer_ce']:.3f}", f"{s['em']:.1f} / {s['f1']:.1f}"] for s in sums]
-    lines.append(_md_table(["model", "shape", "params", "non-emb", "tokens", "tokens/param", "FLOPs", "minutes",
-                            "val CE", "answer CE", f"EM / F1 ({_name(sums[0]['eval_source'])})"], rows))
-    fig, axes = plt.subplots(1, 2, figsize=(10, 3.4), sharex=True)
-    for i, s in enumerate(sums):
-        log = [x for x in read_jsonl(tdir / s["name"] / "log.jsonl") if x["tokens"] > 0]
-        label = f"{s['name']} ({s['params']['non_embedding'] / 1e6:.1f}M)"
-        axes[0].plot([x["tokens"] for x in log], [x["val_ce"] for x in log], marker="o", color=SERIES[i], label=label)
-        axes[1].plot([x["tokens"] for x in log], [x["val_answer_ce"] for x in log], marker="o", color=SERIES[i], label=label)
-    for ax, t in zip(axes, ("all tokens", "answer tokens")):
-        _token_axis(ax)
-        ax.set_xlabel("training tokens")
-        ax.set_ylabel("validation cross-entropy (nats)")
-        ax.set_title(f"Validation CE ({t})")
-    axes[1].legend(fontsize=8, title="model (non-embedding params)", title_fontsize=7,
-                   loc="upper left", bbox_to_anchor=(1.02, 1))
-    fig.savefig(figs / "tiny_ce_curves.png")
-    plt.close(fig)
-    lines.append("![Tiny CE](figures/tiny_ce_curves.png)")
     return "\n\n".join(lines)
 
 
@@ -357,9 +332,10 @@ def build_report(cfg: dict) -> Path:
         section_baselines_rq1(cfg, plt, figs, summary),
         section_rq2(cfg, plt, figs, summary),
         section_rq3(cfg, plt, figs, summary),
-        section_tiny(cfg, plt, figs, summary),
     ]
     write_json(summary, ensure_dir(paths(cfg)["analysis"]) / "summary.json")
+    data_report = Path(cfg["data_dir"]) / "data_report.json"
+    write_tables(cfg, summary, read_json(data_report) if data_report.exists() else None, root / "tables")
     results_md = "\n\n".join(sections)
     template = (REPO_ROOT / "docs" / "report_template.md").read_text()
     report = template.replace("<!-- RESULTS -->", results_md)

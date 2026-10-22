@@ -13,7 +13,6 @@ dependencies = [
   "torch>=2.1",
   "transformers>=4.51",
   "peft>=0.13",
-  "tokenizers>=0.19",
   "huggingface_hub>=0.23",
   "pyarrow>=14",
   "fsspec",

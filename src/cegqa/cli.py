@@ -2,7 +2,7 @@
 
     python -m cegqa.cli <stage> [<stage> ...] [--config configs/default.yaml ...] [--set key=value ...]
 
-Stages: prepare, baselines, rq1, rq2, rq3, tiny, report, all
+Stages: prepare, baselines, rq1, rq2, rq3, report, all
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 from .experiments import STAGES
 from .utils import REPO_ROOT, load_config
 
-ORDER = ["prepare", "baselines", "rq1", "rq2", "rq3", "tiny", "report"]
+ORDER = ["prepare", "baselines", "rq1", "rq2", "rq3", "report"]
 
 
 def main(argv: list[str] | None = None) -> None:

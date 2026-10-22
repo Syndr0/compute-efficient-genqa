@@ -37,13 +37,3 @@ rq3:
 
 stats:
   n_boot: 500
-
-tiny:
-  max_train_examples: 2000
-  token_budget: 200000
-  batch_size: 16
-  num_ce_points: 3
-  num_ce_points_ratio: 8
-  gen_eval_examples: 16
-  models:
-    - {name: tiny-64x2, d_model: 64, n_layers: 2, n_heads: 2}
