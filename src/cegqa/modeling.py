@@ -56,9 +56,29 @@ def load_inference_model(name: str, adapter_dir: str | Path | None = None, devic
     return model
 
 
+def _ignore_incompatible_torchao() -> None:
+    """Recent peft raises (instead of skipping) when an old torchao is installed, as on Colab.
+
+    We never use torchao-quantised layers, so treat an incompatible torchao as absent.
+    """
+    import sys
+
+    import peft.import_utils as iu
+
+    original = iu.is_torchao_available
+    try:
+        original()
+    except ImportError:
+        # patch every peft module that imported the function by name
+        for mod in list(sys.modules.values()):
+            if getattr(mod, "__name__", "").startswith("peft") and getattr(mod, "is_torchao_available", None) is original:
+                mod.is_torchao_available = lambda: False
+
+
 def load_lora_model(name: str, lora_cfg: dict, device=None, gradient_checkpointing: bool = False):
     from peft import LoraConfig, get_peft_model
 
+    _ignore_incompatible_torchao()
     device = device or get_device()
     weight_dtype, _ = pick_dtypes(device)
     model = _from_pretrained(name, weight_dtype)
