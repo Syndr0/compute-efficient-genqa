@@ -122,7 +122,7 @@ def train_lora(cfg: dict, sources: list[str], token_budget: int, seed: int, runs
 
     feats, sample_stats = sample_to_budget(cfg, tok, sources, token_budget, seed)
     dev_feats = {
-        src: [encode_example(tok, ex, mcfg["max_context_tokens"], for_training=False)
+        src: [encode_example(tok, ex, mcfg["max_context_tokens"])
               for ex in load_split(cfg, "dev", src, limit=tcfg["dev_examples_per_source"])]
         for src in cfg["data"]["train_sources"]
     }

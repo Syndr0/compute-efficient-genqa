@@ -35,6 +35,15 @@ def _plt():
     return plt
 
 
+def _token_axis(ax) -> None:
+    """Log-scaled x axis labelled 250k / 1M / 4M instead of overlapping scientific minor ticks."""
+    from matplotlib.ticker import FuncFormatter, NullFormatter
+
+    ax.set_xscale("log")
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: fmt_tokens(v)))
+    ax.xaxis.set_minor_formatter(NullFormatter())
+
+
 def _name(s: str) -> str:
     return NAMES.get(s, s)
 
@@ -123,11 +132,13 @@ def section_baselines_rq1(cfg: dict, plt, figs: Path, summary: dict) -> str:
                 for mode, ls in (("zero_shot", ":"), ("few_shot", "--")):
                     if mode in base and s in base[mode]:
                         ax.axhline(base[mode][s][metric], color=SERIES[i], ls=ls, lw=1, alpha=0.7)
-            ax.set_xscale("log")
+            _token_axis(ax)
+            ax.set_xticks(sorted({e["budget"] for e in rq1}))
             ax.set_xlabel("LoRA training tokens")
             ax.set_ylabel(f"{metric.upper()} (%)")
             ax.set_title(f"{metric.upper()} vs training-token budget")
-        axes[0].legend(fontsize=8, title="eval set (dotted: zero-shot, dashed: few-shot)", title_fontsize=7)
+        axes[1].legend(fontsize=8, title="eval set\n(dotted: zero-shot,\ndashed: few-shot)", title_fontsize=7,
+                       loc="upper left", bbox_to_anchor=(1.02, 1))
         fig.savefig(figs / "rq1_budget_curves.png")
         plt.close(fig)
 
@@ -137,11 +148,11 @@ def section_baselines_rq1(cfg: dict, plt, figs: Path, summary: dict) -> str:
             dev = [x for x in read_jsonl(e["dir"] / "train_log.jsonl") if x["type"] == "dev"]
             ax.plot([max(x["tokens"], 1e3) for x in dev], [x["dev_loss_mean"] for x in dev], marker="o",
                     color=SERIES[i % len(SERIES)], label=f"{fmt_tokens(e['budget'])} (s{e['seed']})")
-        ax.set_xscale("log")
+        _token_axis(ax)
         ax.set_xlabel("training tokens seen")
         ax.set_ylabel("dev answer loss (nats/token)")
         ax.set_title("Validation loss during LoRA SFT")
-        ax.legend(fontsize=8, title="budget")
+        ax.legend(fontsize=8, title="budget", loc="upper left", bbox_to_anchor=(1.02, 1))
         fig.savefig(figs / "rq1_dev_loss.png")
         plt.close(fig)
 
@@ -197,7 +208,7 @@ def section_rq2(cfg: dict, plt, figs: Path, summary: dict) -> str:
     ax.set_xticklabels([f"{_name(s)}\n({'OOD' if rep['by_source'][s]['ood'] else 'ID'})" for s in srcs])
     ax.set_ylabel("F1 (%)")
     ax.set_title("Single- vs multi-source LoRA at equal token budget")
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.02, 1))
     fig.savefig(figs / "rq2_f1_bars.png")
     plt.close(fig)
 
@@ -279,8 +290,12 @@ def section_rq3(cfg: dict, plt, figs: Path, summary: dict) -> str:
         axes[2].legend(fontsize=8)
         for ax, t in zip(axes, ("Throughput", "Latency", "Peak memory")):
             ax.set_xscale("log", base=2)
+            ax.set_xticks(bs)
+            ax.set_xticklabels([str(b) for b in bs])
+            ax.minorticks_off()
             ax.set_xlabel("batch size")
             ax.set_title(t)
+        fig.subplots_adjust(wspace=0.35)
         fig.savefig(figs / "rq3_batch_sweep.png")
         plt.close(fig)
 
@@ -319,11 +334,12 @@ def section_tiny(cfg: dict, plt, figs: Path, summary: dict) -> str:
         axes[0].plot([x["tokens"] for x in log], [x["val_ce"] for x in log], marker="o", color=SERIES[i], label=label)
         axes[1].plot([x["tokens"] for x in log], [x["val_answer_ce"] for x in log], marker="o", color=SERIES[i], label=label)
     for ax, t in zip(axes, ("all tokens", "answer tokens")):
-        ax.set_xscale("log")
+        _token_axis(ax)
         ax.set_xlabel("training tokens")
         ax.set_ylabel("validation cross-entropy (nats)")
         ax.set_title(f"Validation CE ({t})")
-    axes[0].legend(fontsize=8, title="model (non-embedding params)", title_fontsize=7)
+    axes[1].legend(fontsize=8, title="model (non-embedding params)", title_fontsize=7,
+                   loc="upper left", bbox_to_anchor=(1.02, 1))
     fig.savefig(figs / "tiny_ce_curves.png")
     plt.close(fig)
     lines.append("![Tiny CE](figures/tiny_ce_curves.png)")
