@@ -12,3 +12,10 @@ outputs/
 outputs_smoke/
 *.safetensors
 *.pt
+
+# LaTeX build products (paper/main.pdf is committed)
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out

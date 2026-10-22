@@ -151,10 +151,15 @@ def section_baselines_rq1(cfg: dict, plt, figs: Path, summary: dict) -> str:
 
         # dev-loss learning curves
         fig, ax = plt.subplots(figsize=(5, 3.4))
+        initial = None
         for i, e in enumerate(sorted(rq1, key=lambda e: e["budget"])):
             dev = [x for x in read_jsonl(e["dir"] / "train_log.jsonl") if x["type"] == "dev"]
-            ax.plot([max(x["tokens"], 1e3) for x in dev], [x["dev_loss_mean"] for x in dev], marker="o",
+            initial = next((x["dev_loss_mean"] for x in dev if x["tokens"] == 0), initial)
+            dev = [x for x in dev if x["tokens"] > 0]
+            ax.plot([x["tokens"] for x in dev], [x["dev_loss_mean"] for x in dev], marker="o",
                     color=SERIES[i % len(SERIES)], label=f"{fmt_tokens(e['budget'])} (s{e['seed']})")
+        if initial is not None:
+            ax.axhline(initial, color=INK_2, ls="--", lw=1, label="before training")
         _token_axis(ax)
         ax.set_xlabel("training tokens seen")
         ax.set_ylabel("dev answer loss (nats/token)")

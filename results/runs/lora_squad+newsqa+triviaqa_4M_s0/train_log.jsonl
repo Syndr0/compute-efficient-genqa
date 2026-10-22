@@ -1,0 +1,9 @@
+{"type": "dev", "step": 0, "tokens": 0, "elapsed_s": 0.0, "dev_loss": {"squad": 1.94781, "newsqa": 3.04213, "triviaqa": 4.69801}, "dev_loss_mean": 3.22931}
+{"type": "dev", "step": 72, "tokens": 512686, "elapsed_s": 37.68034, "dev_loss": {"squad": 0.34109, "newsqa": 0.60542, "triviaqa": 1.27809}, "dev_loss_mean": 0.74153}
+{"type": "dev", "step": 144, "tokens": 1014787, "elapsed_s": 75.75563, "dev_loss": {"squad": 0.31459, "newsqa": 0.54274, "triviaqa": 1.05263}, "dev_loss_mean": 0.63665}
+{"type": "dev", "step": 215, "tokens": 1492072, "elapsed_s": 112.65135, "dev_loss": {"squad": 0.3061, "newsqa": 0.50841, "triviaqa": 1.00828}, "dev_loss_mean": 0.6076}
+{"type": "dev", "step": 287, "tokens": 1994002, "elapsed_s": 150.69714, "dev_loss": {"squad": 0.3003, "newsqa": 0.52816, "triviaqa": 1.0082}, "dev_loss_mean": 0.61222}
+{"type": "dev", "step": 359, "tokens": 2505487, "elapsed_s": 189.16475, "dev_loss": {"squad": 0.29753, "newsqa": 0.52235, "triviaqa": 0.965}, "dev_loss_mean": 0.59496}
+{"type": "dev", "step": 430, "tokens": 2998530, "elapsed_s": 226.2325, "dev_loss": {"squad": 0.29466, "newsqa": 0.48524, "triviaqa": 0.92509}, "dev_loss_mean": 0.56833}
+{"type": "dev", "step": 502, "tokens": 3497139, "elapsed_s": 264.04928, "dev_loss": {"squad": 0.30102, "newsqa": 0.46761, "triviaqa": 0.92511}, "dev_loss_mean": 0.56458}
+{"type": "dev", "step": 574, "tokens": 4000398, "elapsed_s": 301.30403, "dev_loss": {"squad": 0.29768, "newsqa": 0.46711, "triviaqa": 0.92288}, "dev_loss_mean": 0.56256}

@@ -1,4 +1,4 @@
-# Compute-Efficient Generative Question Answering
+# How Far Can 0.6B Parameters Go? Compute-Efficient Generative QA with LoRA Fine-Tuning
 
 *LLM Semester Project · EN.737 · Five-person team*
 

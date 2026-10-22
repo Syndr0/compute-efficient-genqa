@@ -1,97 +1,138 @@
-# Compute-Efficient Generative Question Answering
+# How Far Can 0.6B Parameters Go? Compute-Efficient Generative QA with LoRA Fine-Tuning
 
-Adapting **Qwen3-0.6B** to context-grounded, single-turn question answering with **LoRA
-supervised fine-tuning** under a small compute budget, using the standardized
-[MRQA](https://huggingface.co/datasets/mrqa-workshop/mrqa) datasets.
-LLM Semester Project · EN.737.
+[![Paper](https://img.shields.io/badge/paper-PDF-b31b1b)](paper/main.pdf)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Syndr0/compute-efficient-genqa/blob/main/notebooks/run_all.ipynb)
+[![tests](https://github.com/Syndr0/compute-efficient-genqa/actions/workflows/tests.yml/badge.svg)](https://github.com/Syndr0/compute-efficient-genqa/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-| | |
-|---|---|
-| Train | SQuAD, NewsQA, TriviaQA (MRQA train split) |
-| ID eval | SQuAD, NewsQA, TriviaQA (MRQA validation split) |
-| OOD eval | BioASQ, DuoRC (MRQA test split, never trained on) |
-| Metrics | Exact Match, token F1, bootstrap CIs, paired bootstrap tests |
+Official code, configurations and results for the paper
+**"How Far Can 0.6B Parameters Go? Compute-Efficient Generative Question Answering with LoRA Fine-Tuning"**
+(EN.737 Large Language Models course project, NeurIPS 2026 preprint format).
 
-**Research questions**
+We adapt **Qwen3-0.6B** with **LoRA** to context-grounded question answering on **MRQA** under exact
+training-token budgets and study training efficiency (RQ1), out-of-domain generalization (RQ2) and inference
+efficiency (RQ3) in one controlled pipeline.
 
-* **RQ1 — Training efficiency:** QA quality vs LoRA training-token budget (0.25M / 1M / 4M tokens) against zero- and few-shot prompting, with learning curves, validation loss and GPU cost.
-* **RQ2 — Generalization:** SQuAD-only vs SQuAD + NewsQA + TriviaQA at a fixed 1M-token budget, 3 seeds, evaluated on unseen BioASQ and DuoRC with paired bootstrap CIs and error analysis.
-* **RQ3 — Inference efficiency:** batch size vs throughput, latency and GPU memory for the same fine-tuned model (plus length-sorting, KV-cache and precision ablations).
-* **Tiny Transformer:** decoder-only Transformers (~1–17M params) trained from scratch; cross-entropy vs parameters and training tokens.
+## Key findings
 
-Project proposal: [docs/proposal.pdf](docs/proposal.pdf). Hypotheses and quantitative predictions are fixed in [docs/hypotheses.md](docs/hypotheses.md).
+* **Fine-tuning is cheap and dominates prompting.** 250k training tokens (578 questions, 20 s on one GPU) raise
+  mean F1 from 41.4 → 70.6 in-domain and 34.3 → 62.6 on unseen BioASQ/DuoRC. Each further 4× budget adds only ~2 F1.
+* **Data diversity did not buy robustness.** At a fixed 4M-token budget, SQuAD + NewsQA + TriviaQA matches
+  SQuAD-only training out of domain (ΔF1 −0.33 and +0.49, 95% CIs include 0, 3 seeds) and costs 1.2 F1 on SQuAD.
+  Pooled validation loss would have wrongly favoured the mixture.
+* **Static batching has an interior optimum.** Throughput rises 7.1× to 116 questions/s at batch 64 and then
+  falls; length-sorting nearly doubles throughput at large batches; quality is unchanged.
 
-## Run on Google Colab
+| System | GPU-min | SQuAD | NewsQA | TriviaQA | BioASQ (OOD) | DuoRC (OOD) |
+|---|---:|---:|---:|---:|---:|---:|
+| Zero-shot | – | 33.2 | 21.7 | 17.1 | 23.8 | 15.2 |
+| 3-shot | – | 55.5 | 31.5 | 37.2 | 41.1 | 27.5 |
+| LoRA 250k tokens | 0.3 | 82.3 | 56.5 | 73.0 | 69.9 | 55.3 |
+| LoRA 1M tokens | 1.3 | 86.7 | 57.4 | 70.0 | 72.3 | 55.7 |
+| LoRA 4M tokens | 5.0 | 88.4 | 63.1 | 72.7 | **74.3** | 58.5 |
+| LoRA 16M tokens | 20.1 | **91.0** | **67.9** | **76.0** | 74.2 | **59.8** |
 
-Pick a GPU runtime (**Runtime → Change runtime type**), open a notebook, and run all cells.
-Every stage resumes from what is already saved on Drive.
+F1 on 1,000 questions per set, one NVIDIA RTX PRO 6000 (Colab G4). Full tables, CIs and analyses are in the
+[paper](paper/main.pdf) and [`results/`](results/).
 
-| GPU | profile (auto-detected) | budgets (RQ1) | RQ2 budget | eval questions / set | outputs | full run |
-|---|---|---|---|---|---|---|
-| T4 (free tier) | `configs/default.yaml` | 0.25M, 1M, 4M | 1M | 500 | `MyDrive/cegqa_outputs` | ~2.5 h |
-| ≥ 40 GB: A100 / H100 / G4 (Pro) | `default.yaml` + `configs/a100.yaml` | 0.25M, 1M, 4M, 16M | 4M | 1,000 | `MyDrive/cegqa_outputs_a100` | ~1.5–2 h |
+<p align="center">
+  <img src="results/figures/rq1_budget_curves.png" width="85%" alt="F1 and EM against LoRA training tokens">
+</p>
 
-Times in the notebook table below are for the T4 profile.
-
-| Notebook | Owner | What it does | T4 time |
-|---|---|---|---|
-| [00 Data & evaluation](notebooks/00_data_and_evaluation.ipynb) [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Syndr0/compute-efficient-genqa/blob/main/notebooks/00_data_and_evaluation.ipynb) | P1 | MRQA download, splits, validation, overlap checks, metric tests | ~5 min |
-| [01 Baselines & RQ1](notebooks/01_baselines_and_rq1_training_budget.ipynb) [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Syndr0/compute-efficient-genqa/blob/main/notebooks/01_baselines_and_rq1_training_budget.ipynb) | P2 | zero/few-shot prompting, LoRA token-budget sweep | ~1 h |
-| [02 RQ2 generalization](notebooks/02_rq2_generalization.ipynb) [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Syndr0/compute-efficient-genqa/blob/main/notebooks/02_rq2_generalization.ipynb) | P3 | single vs multi-source, 3 seeds, statistics, error analysis | ~45 min |
-| [03 RQ3 inference](notebooks/03_rq3_inference_efficiency.ipynb) [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Syndr0/compute-efficient-genqa/blob/main/notebooks/03_rq3_inference_efficiency.ipynb) | P4 | batch-size / sorting / KV-cache / precision sweeps | ~20 min |
-| [04 Tiny Transformer](notebooks/04_tiny_transformer.ipynb) [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Syndr0/compute-efficient-genqa/blob/main/notebooks/04_tiny_transformer.ipynb) | P5 | from-scratch decoder-only Transformer, CE curves | ~25 min |
-| [05 Report](notebooks/05_report.ipynb) [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Syndr0/compute-efficient-genqa/blob/main/notebooks/05_report.ipynb) | all | tables, figures, `report.md`, results zip | ~1 min |
-| [Run all](notebooks/run_all.ipynb) [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Syndr0/compute-efficient-genqa/blob/main/notebooks/run_all.ipynb) | | every stage in order (tick `SMOKE_TEST` for a 10-minute check) | ~2.5 h |
-
-Run 00 first (it prepares the data on Drive). After that, 01, 02 and 04 can run in parallel in separate Colab sessions sharing the same Drive folder; run 03 after 01 so it benchmarks the fine-tuned adapter.
-
-## Run locally / from the command line
+## Installation
 
 ```bash
+git clone https://github.com/Syndr0/compute-efficient-genqa.git
+cd compute-efficient-genqa
 pip install -e ".[dev]"
-python -m cegqa.cli all                                   # full pipeline (GPU recommended)
-python -m cegqa.cli all --config configs/default.yaml --config configs/smoke.yaml   # quick end-to-end check
-python -m cegqa.cli rq1 --set rq1.token_budgets=[500000,2000000]                    # override any config value
-python -m pytest -q tests
 ```
 
-Stages: `prepare`, `baselines`, `rq1`, `rq2`, `rq3`, `tiny`, `report`, `all`. Set `CEGQA_OUTPUT_DIR` to change where outputs go.
+Requires Python ≥ 3.9, PyTorch ≥ 2.1, Transformers ≥ 4.51 and PEFT ≥ 0.13. MRQA is read from the
+Hugging Face Hub (`mrqa-workshop/mrqa`); only the needed columns of the needed shards are downloaded.
 
-## Repository layout
+## Reproducing the paper
+
+```bash
+# all experiments (≈2 GPU-hours on a ≥40 GB GPU; resumable)
+python -m cegqa.cli all --config configs/default.yaml --config configs/a100.yaml
+
+# or stage by stage
+python -m cegqa.cli prepare   --config configs/default.yaml --config configs/a100.yaml   # data, splits, overlap checks
+python -m cegqa.cli baselines --config configs/default.yaml --config configs/a100.yaml   # zero-/few-shot prompting
+python -m cegqa.cli rq1       --config configs/default.yaml --config configs/a100.yaml   # token-budget sweep
+python -m cegqa.cli rq2       --config configs/default.yaml --config configs/a100.yaml   # single vs multi-source, 3 seeds
+python -m cegqa.cli rq3       --config configs/default.yaml --config configs/a100.yaml   # inference benchmark
+python -m cegqa.cli report    --config configs/default.yaml --config configs/a100.yaml   # tables, figures, report.md
+
+# paper (uses the generated tables and figures)
+scripts/build_paper.sh results
+```
+
+`configs/default.yaml` is the smaller 16 GB (T4) profile; `configs/smoke.yaml` runs every stage on a handful of
+examples. Outputs go to `outputs/` (override with `CEGQA_OUTPUT_DIR`), and every stage skips work that is
+already saved.
+
+### Google Colab
+
+| Notebook | Contents |
+|---|---|
+| [`run_all.ipynb`](notebooks/run_all.ipynb) | all experiments end to end |
+| [`00_data.ipynb`](notebooks/00_data.ipynb) | data preparation, validation, overlap checks, metric tests |
+| [`01_rq1_training_budget.ipynb`](notebooks/01_rq1_training_budget.ipynb) | prompting baselines and the token-budget sweep |
+| [`02_rq2_generalization.ipynb`](notebooks/02_rq2_generalization.ipynb) | single- vs multi-source fine-tuning |
+| [`03_rq3_inference.ipynb`](notebooks/03_rq3_inference.ipynb) | inference batch-size benchmark |
+| [`04_report.ipynb`](notebooks/04_report.ipynb) | tables, figures, report and results export |
+
+The notebooks store outputs on Google Drive and select the large-GPU profile automatically on GPUs with ≥ 40 GB.
+
+## Results and artifacts
+
+[`results/`](results/) holds everything behind the paper except per-question predictions and adapters:
+per-run metrics with bootstrap CIs, training summaries (tokens, time, FLOPs, memory) and dev-loss logs,
+RQ2 statistics and error analysis, RQ3 benchmark rows, figures, LaTeX tables and the generated
+[`report.md`](results/report.md). `results/results_bundle.json` is the same data as a single file
+(`scripts/bundle_results.py unpack`). The pipeline also writes per-question predictions to
+`runs/*/predictions/`.
+
+## Repository structure
 
 ```
-configs/default.yaml        frozen experiment configuration (smoke.yaml: tiny end-to-end check)
+configs/             default.yaml (16 GB profile), a100.yaml (≥40 GB profile), smoke.yaml
 src/cegqa/
-  data.py                   P1  MRQA loading, cleaning, passage-level splits, validation, overlap checks
-  metrics.py, evaluate.py   P1  EM/F1 (official normalisation), prediction logging
-  prompts.py, modeling.py   P2  chat prompt, passage truncation, answer parsing, model loading
-  train_lora.py             P2  LoRA SFT with exact token budgets, dev-loss curves, cost accounting
-  experiments.py            P2/P3  baselines, RQ1, RQ2 orchestration + RQ2 statistics
-  stats.py, error_analysis.py   P3  bootstrap CIs, paired bootstrap, error categories
-  generation.py, inference_bench.py   P4  instrumented batched decoding, RQ3 sweeps
-  tiny/                     P5  decoder-only Transformer from scratch + training
-  report.py                 tables, figures and report.md
-notebooks/                  Colab notebooks (generated by scripts/make_notebooks.py)
-docs/                       hypotheses, report template, contribution statement
-results/                    exported metrics, predictions, logs and figures (scripts/export_results.py)
+  data.py            MRQA loading, passage-level splits, validation, overlap filtering
+  prompts.py         chat prompt, passage truncation, answer extraction
+  modeling.py        model / LoRA loading
+  train_lora.py      token-budgeted LoRA SFT with cost accounting
+  generation.py      instrumented batched decoding
+  evaluate.py        EM/F1 evaluation and prediction logging
+  metrics.py         official SQuAD/MRQA EM and F1
+  stats.py           bootstrap CIs, paired bootstrap
+  error_analysis.py  error categories, question types
+  inference_bench.py RQ3 benchmark
+  experiments.py     stage orchestration and RQ2 statistics
+  report.py          figures and report
+  latex.py           paper tables
+  cli.py             command-line entry point
+notebooks/           Colab notebooks
+paper/               NeurIPS 2026 preprint (LaTeX source and PDF)
+results/             released results, figures and tables
+docs/                pre-registered hypotheses, report template, contribution statement
+scripts/             paper build, results bundling/export, notebook generation
+tests/               unit tests
 ```
 
-## Outputs
+## Citation
 
-Each LoRA run directory (`runs/lora_<sources>_<budget>_s<seed>/`) contains `train_summary.json`
-(tokens, examples, steps, GPU time, cost, FLOPs, peak memory, dev losses), `train_log.jsonl`, the
-`adapter/`, `predictions/<eval set>.jsonl` (gold answers, raw output, parsed answer, EM, F1,
-truncation flags) and `metrics.json` (EM/F1 with 95% CIs). `python -m cegqa.cli report` turns
-everything into `report.md`, `figures/` and `analysis/summary.json`.
-
-## Deliverables
-
-* Reproducible Colab notebooks and this repository
-* Experiment configuration: [configs/default.yaml](configs/default.yaml), pre-registration: [docs/hypotheses.md](docs/hypotheses.md)
-* Saved predictions and evaluation results: `results/` (exported after the Colab runs)
-* Research report: generated `report.md` from [docs/report_template.md](docs/report_template.md)
-* Team contribution statement: [docs/contributions.md](docs/contributions.md)
+```bibtex
+@misc{cegqa2026,
+  title  = {How Far Can 0.6B Parameters Go? Compute-Efficient Generative Question Answering with LoRA Fine-Tuning},
+  author = {Author One and Author Two and Author Three and Author Four and Author Five},
+  year   = {2026},
+  note   = {EN.737 course project},
+  url    = {https://github.com/Syndr0/compute-efficient-genqa}
+}
+```
 
 ## License
 
-MIT
+Code is released under the [MIT License](LICENSE). MRQA and its component datasets are subject to their own licenses.

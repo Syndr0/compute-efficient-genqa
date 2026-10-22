@@ -1,0 +1,37 @@
+{
+  "run": "lora_squad_4M_s0",
+  "sources": [
+    "squad"
+  ],
+  "token_budget": 4000000,
+  "seed": 0,
+  "examples": 16823,
+  "sample_stats": {
+    "squad": {
+      "examples": 16823,
+      "tokens": 4000075
+    }
+  },
+  "tokens_seen": 4000075,
+  "target_tokens": 102312,
+  "optimizer_steps": 1052,
+  "train_time_s": 217.33272,
+  "tokens_per_s": 18405.30506,
+  "gpu_hours": 0.06037,
+  "est_cost_usd": 0.06037,
+  "est_train_flops": 9698461266739200,
+  "peak_mem_gb": 17.06346,
+  "params": {
+    "total": 606142464,
+    "trainable": 10092544
+  },
+  "initial_dev_loss": 3.22931,
+  "final_dev_loss": 1.22494,
+  "final_dev_loss_by_source": {
+    "squad": 0.27853,
+    "newsqa": 0.78028,
+    "triviaqa": 2.61602
+  },
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "gpu_mem_gb": 94.97
+}

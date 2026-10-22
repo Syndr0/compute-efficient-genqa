@@ -1,0 +1,423 @@
+{
+  "config": {
+    "hf_dataset": "mrqa-workshop/mrqa",
+    "train_sources": [
+      "squad",
+      "newsqa",
+      "triviaqa"
+    ],
+    "id_eval_sources": [
+      "squad",
+      "newsqa",
+      "triviaqa"
+    ],
+    "ood_eval_sources": [
+      "bioasq",
+      "duorc"
+    ],
+    "max_train_per_source": 50000,
+    "dev_per_source": 300,
+    "eval_per_source": 1000,
+    "drop_overlaps": true,
+    "num_fewshot": 3,
+    "fewshot_max_context_words": 120,
+    "seed": 13
+  },
+  "train": {
+    "squad": {
+      "n": 49997,
+      "empty_answers": 0,
+      "answer_in_context_rate": 0.99998,
+      "context_words": {
+        "mean": 119.78041,
+        "p50": 110,
+        "p90": 183,
+        "p99": 282,
+        "max": 648
+      },
+      "question_words": {
+        "mean": 10.0679,
+        "p50": 10,
+        "p90": 15,
+        "p99": 21,
+        "max": 40
+      },
+      "answer_words": {
+        "mean": 3.15591,
+        "p50": 2,
+        "p90": 7,
+        "p99": 19,
+        "max": 31
+      }
+    },
+    "newsqa": {
+      "n": 50000,
+      "empty_answers": 0,
+      "answer_in_context_rate": 1.0,
+      "context_words": {
+        "mean": 495.86692,
+        "p50": 535,
+        "p90": 670,
+        "p99": 693,
+        "max": 728
+      },
+      "question_words": {
+        "mean": 6.6061,
+        "p50": 6,
+        "p90": 10,
+        "p99": 14,
+        "max": 127
+      },
+      "answer_words": {
+        "mean": 4.024,
+        "p50": 2,
+        "p90": 9,
+        "p99": 23,
+        "max": 87
+      }
+    },
+    "triviaqa": {
+      "n": 50000,
+      "empty_answers": 0,
+      "answer_in_context_rate": 0.99732,
+      "context_words": {
+        "mean": 648.92742,
+        "p50": 659,
+        "p90": 689,
+        "p99": 712,
+        "max": 774
+      },
+      "question_words": {
+        "mean": 13.2207,
+        "p50": 12,
+        "p90": 21,
+        "p99": 36,
+        "max": 106
+      },
+      "answer_words": {
+        "mean": 1.5806,
+        "p50": 1,
+        "p90": 2,
+        "p99": 4,
+        "max": 18
+      }
+    }
+  },
+  "dev": {
+    "squad": {
+      "n": 300,
+      "empty_answers": 0,
+      "answer_in_context_rate": 1.0,
+      "context_words": {
+        "mean": 118.65333,
+        "p50": 108,
+        "p90": 199,
+        "p99": 296,
+        "max": 300
+      },
+      "question_words": {
+        "mean": 10.32,
+        "p50": 10,
+        "p90": 15,
+        "p99": 21,
+        "max": 25
+      },
+      "answer_words": {
+        "mean": 3.79667,
+        "p50": 2,
+        "p90": 8,
+        "p99": 26,
+        "max": 27
+      }
+    },
+    "newsqa": {
+      "n": 300,
+      "empty_answers": 0,
+      "answer_in_context_rate": 1.0,
+      "context_words": {
+        "mean": 509.77,
+        "p50": 580,
+        "p90": 660,
+        "p99": 691,
+        "max": 691
+      },
+      "question_words": {
+        "mean": 6.45667,
+        "p50": 6,
+        "p90": 10,
+        "p99": 14,
+        "max": 15
+      },
+      "answer_words": {
+        "mean": 3.82667,
+        "p50": 2,
+        "p90": 9,
+        "p99": 24,
+        "max": 30
+      }
+    },
+    "triviaqa": {
+      "n": 300,
+      "empty_answers": 0,
+      "answer_in_context_rate": 0.99667,
+      "context_words": {
+        "mean": 643.75667,
+        "p50": 658,
+        "p90": 686,
+        "p99": 708,
+        "max": 718
+      },
+      "question_words": {
+        "mean": 12.24667,
+        "p50": 11,
+        "p90": 20,
+        "p99": 31,
+        "max": 32
+      },
+      "answer_words": {
+        "mean": 1.55667,
+        "p50": 1,
+        "p90": 2,
+        "p99": 4,
+        "max": 5
+      }
+    }
+  },
+  "test": {
+    "squad": {
+      "n": 1000,
+      "empty_answers": 0,
+      "answer_in_context_rate": 1.0,
+      "context_words": {
+        "mean": 125.047,
+        "p50": 109,
+        "p90": 188,
+        "p99": 414,
+        "max": 629
+      },
+      "question_words": {
+        "mean": 10.268,
+        "p50": 10,
+        "p90": 15,
+        "p99": 22,
+        "max": 28
+      },
+      "answer_words": {
+        "mean": 3.015,
+        "p50": 2,
+        "p90": 6,
+        "p99": 15,
+        "max": 24
+      }
+    },
+    "newsqa": {
+      "n": 1000,
+      "empty_answers": 0,
+      "answer_in_context_rate": 1.0,
+      "context_words": {
+        "mean": 492.005,
+        "p50": 540,
+        "p90": 666,
+        "p99": 691,
+        "max": 710
+      },
+      "question_words": {
+        "mean": 6.56,
+        "p50": 6,
+        "p90": 10,
+        "p99": 13,
+        "max": 16
+      },
+      "answer_words": {
+        "mean": 3.995,
+        "p50": 2,
+        "p90": 9,
+        "p99": 25,
+        "max": 40
+      }
+    },
+    "triviaqa": {
+      "n": 1000,
+      "empty_answers": 0,
+      "answer_in_context_rate": 0.999,
+      "context_words": {
+        "mean": 643.234,
+        "p50": 658,
+        "p90": 686,
+        "p99": 713,
+        "max": 754
+      },
+      "question_words": {
+        "mean": 13.554,
+        "p50": 12,
+        "p90": 21,
+        "p99": 39,
+        "max": 128
+      },
+      "answer_words": {
+        "mean": 1.568,
+        "p50": 1,
+        "p90": 3,
+        "p99": 4,
+        "max": 5
+      }
+    },
+    "bioasq": {
+      "n": 1000,
+      "empty_answers": 0,
+      "answer_in_context_rate": 0.978,
+      "context_words": {
+        "mean": 208.218,
+        "p50": 207,
+        "p90": 287,
+        "p99": 452,
+        "max": 639
+      },
+      "question_words": {
+        "mean": 9.601,
+        "p50": 9,
+        "p90": 15,
+        "p99": 23,
+        "max": 27
+      },
+      "answer_words": {
+        "mean": 2.001,
+        "p50": 1,
+        "p90": 3,
+        "p99": 8,
+        "max": 38
+      }
+    },
+    "duorc": {
+      "n": 1000,
+      "empty_answers": 0,
+      "answer_in_context_rate": 0.955,
+      "context_words": {
+        "mean": 623.316,
+        "p50": 677,
+        "p90": 698,
+        "p99": 724,
+        "max": 738
+      },
+      "question_words": {
+        "mean": 7.4,
+        "p50": 7,
+        "p90": 11,
+        "p99": 15,
+        "max": 23
+      },
+      "answer_words": {
+        "mean": 1.922,
+        "p50": 1,
+        "p90": 3,
+        "p99": 9,
+        "max": 15
+      }
+    }
+  },
+  "overlap_before_filter": {
+    "dev_squad": {
+      "n": 300,
+      "context_overlap": 0,
+      "question_overlap": 1,
+      "pair_overlap": 0
+    },
+    "dev_newsqa": {
+      "n": 300,
+      "context_overlap": 0,
+      "question_overlap": 16,
+      "pair_overlap": 0
+    },
+    "dev_triviaqa": {
+      "n": 300,
+      "context_overlap": 0,
+      "question_overlap": 0,
+      "pair_overlap": 0
+    },
+    "squad": {
+      "n": 10507,
+      "context_overlap": 0,
+      "question_overlap": 12,
+      "pair_overlap": 0
+    },
+    "newsqa": {
+      "n": 4212,
+      "context_overlap": 552,
+      "question_overlap": 240,
+      "pair_overlap": 17
+    },
+    "triviaqa": {
+      "n": 7785,
+      "context_overlap": 601,
+      "question_overlap": 2,
+      "pair_overlap": 0
+    },
+    "bioasq": {
+      "n": 1504,
+      "context_overlap": 0,
+      "question_overlap": 0,
+      "pair_overlap": 0
+    },
+    "duorc": {
+      "n": 1501,
+      "context_overlap": 0,
+      "question_overlap": 7,
+      "pair_overlap": 0
+    }
+  },
+  "overlap_after_filter": {
+    "dev_squad": {
+      "n": 300,
+      "context_overlap": 0,
+      "question_overlap": 1,
+      "pair_overlap": 0
+    },
+    "dev_newsqa": {
+      "n": 300,
+      "context_overlap": 0,
+      "question_overlap": 16,
+      "pair_overlap": 0
+    },
+    "dev_triviaqa": {
+      "n": 300,
+      "context_overlap": 0,
+      "question_overlap": 0,
+      "pair_overlap": 0
+    },
+    "squad": {
+      "n": 1000,
+      "context_overlap": 0,
+      "question_overlap": 1,
+      "pair_overlap": 0
+    },
+    "newsqa": {
+      "n": 1000,
+      "context_overlap": 0,
+      "question_overlap": 62,
+      "pair_overlap": 0
+    },
+    "triviaqa": {
+      "n": 1000,
+      "context_overlap": 0,
+      "question_overlap": 0,
+      "pair_overlap": 0
+    },
+    "bioasq": {
+      "n": 1000,
+      "context_overlap": 0,
+      "question_overlap": 0,
+      "pair_overlap": 0
+    },
+    "duorc": {
+      "n": 1000,
+      "context_overlap": 0,
+      "question_overlap": 4,
+      "pair_overlap": 0
+    }
+  },
+  "fewshot_ids": [
+    "squad:9fb3f2a1408d470bb3371873f7784a28",
+    "squad:ef552a6f422d4907ab5902348607909a",
+    "squad:f6d920a9a1724316b74ecd65e98678a4"
+  ]
+}

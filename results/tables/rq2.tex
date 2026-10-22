@@ -1,0 +1,13 @@
+\begin{tabular}{llrrrrrcr}
+\toprule
+ & & \multicolumn{2}{c}{EM} & \multicolumn{2}{c}{F1} & \multicolumn{3}{c}{$\Delta$F1 (multi $-$ single)} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-9}
+Eval set & Type & Single & Multi & Single & Multi & $\Delta$ & 95\% CI & $p$ \\
+\midrule
+SQuAD & ID & 81.6 $\pm$ 0.2 & 80.5 $\pm$ 0.7 & 89.7 $\pm$ 0.2 & 88.5 $\pm$ 0.2 & -1.17 & [-2.07, -0.29] & 0.008 \\
+NewsQA & ID & 44.3 $\pm$ 0.8 & 45.3 $\pm$ 0.7 & 62.1 $\pm$ 0.9 & 63.3 $\pm$ 0.2 & +1.21 & [-0.10, +2.53] & 0.068 \\
+TriviaQA & ID & 65.9 $\pm$ 1.0 & 67.9 $\pm$ 1.2 & 72.8 $\pm$ 0.9 & 73.8 $\pm$ 1.1 & +1.01 & [-0.91, +2.95] & 0.320 \\
+BioASQ & OOD & 61.2 $\pm$ 0.8 & 60.1 $\pm$ 0.6 & 74.3 $\pm$ 0.7 & 73.9 $\pm$ 0.6 & -0.33 & [-1.40, +0.77] & 0.547 \\
+DuoRC & OOD & 49.3 $\pm$ 0.8 & 48.6 $\pm$ 1.7 & 58.0 $\pm$ 0.8 & 58.5 $\pm$ 1.2 & +0.49 & [-0.80, +1.79] & 0.457 \\
+\bottomrule
+\end{tabular}

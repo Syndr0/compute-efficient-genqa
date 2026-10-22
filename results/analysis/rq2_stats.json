@@ -1,0 +1,1610 @@
+{
+  "conditions": {
+    "single": [
+      "squad"
+    ],
+    "multi": [
+      "squad",
+      "newsqa",
+      "triviaqa"
+    ]
+  },
+  "token_budget": 4000000,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "by_source": {
+    "squad": {
+      "n_seeds": 3,
+      "single": {
+        "em": {
+          "mean": 81.63333,
+          "std": 0.15275,
+          "n": 3
+        },
+        "f1": {
+          "mean": 89.65208,
+          "std": 0.22948,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.816,
+            "partial": 0.062,
+            "verbose": 0.072,
+            "wrong_span": 0.048,
+            "not_in_passage": 0.002,
+            "empty": 0.0,
+            "answer_truncated": 0.0
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 41,
+              "f1": 87.48718
+            },
+            "how many": {
+              "n": 54,
+              "f1": 92.80864
+            },
+            "how much": {
+              "n": 11,
+              "f1": 77.70563
+            },
+            "other": {
+              "n": 95,
+              "f1": 92.49667
+            },
+            "what": {
+              "n": 523,
+              "f1": 89.31306
+            },
+            "when": {
+              "n": 71,
+              "f1": 97.2898
+            },
+            "where": {
+              "n": 36,
+              "f1": 92.19136
+            },
+            "which": {
+              "n": 55,
+              "f1": 86.35262
+            },
+            "who": {
+              "n": 95,
+              "f1": 87.57895
+            },
+            "whom": {
+              "n": 2,
+              "f1": 100.0
+            },
+            "why": {
+              "n": 11,
+              "f1": 73.52265
+            },
+            "yes/no": {
+              "n": 6,
+              "f1": 84.09091
+            }
+          },
+          "mean_pred_words": 3.057,
+          "mean_gold_words": 2.228
+        }
+      },
+      "multi": {
+        "em": {
+          "mean": 80.46667,
+          "std": 0.68069,
+          "n": 3
+        },
+        "f1": {
+          "mean": 88.48476,
+          "std": 0.15364,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.797,
+            "partial": 0.07,
+            "verbose": 0.067,
+            "wrong_span": 0.063,
+            "not_in_passage": 0.003,
+            "empty": 0.0,
+            "answer_truncated": 0.0
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 41,
+              "f1": 88.77484
+            },
+            "how many": {
+              "n": 54,
+              "f1": 86.41414
+            },
+            "how much": {
+              "n": 11,
+              "f1": 75.88745
+            },
+            "other": {
+              "n": 95,
+              "f1": 89.1876
+            },
+            "what": {
+              "n": 523,
+              "f1": 88.09473
+            },
+            "when": {
+              "n": 71,
+              "f1": 94.80154
+            },
+            "where": {
+              "n": 36,
+              "f1": 90.92472
+            },
+            "which": {
+              "n": 55,
+              "f1": 88.78788
+            },
+            "who": {
+              "n": 95,
+              "f1": 87.96992
+            },
+            "whom": {
+              "n": 2,
+              "f1": 100.0
+            },
+            "why": {
+              "n": 11,
+              "f1": 70.41141
+            },
+            "yes/no": {
+              "n": 6,
+              "f1": 84.09091
+            }
+          },
+          "mean_pred_words": 2.976,
+          "mean_gold_words": 2.228
+        }
+      },
+      "paired_em": {
+        "diff": -1.16667,
+        "lo": -2.43333,
+        "hi": 0.13333,
+        "p_one_sided": 0.9602,
+        "p_two_sided": 0.0818,
+        "n": 1000
+      },
+      "paired_em_per_seed": [
+        {
+          "diff": -1.9,
+          "lo": -4.0,
+          "hi": 0.2,
+          "p_one_sided": 0.9647,
+          "p_two_sided": 0.0876,
+          "n": 1000
+        },
+        {
+          "diff": -0.8,
+          "lo": -2.7025,
+          "hi": 1.2,
+          "p_one_sided": 0.7991,
+          "p_two_sided": 0.4554,
+          "n": 1000
+        },
+        {
+          "diff": -0.8,
+          "lo": -2.8,
+          "hi": 1.2,
+          "p_one_sided": 0.7997,
+          "p_two_sided": 0.4588,
+          "n": 1000
+        }
+      ],
+      "paired_f1": {
+        "diff": -1.16731,
+        "lo": -2.06988,
+        "hi": -0.29275,
+        "p_one_sided": 0.9958,
+        "p_two_sided": 0.0084,
+        "n": 1000
+      },
+      "paired_f1_per_seed": [
+        {
+          "diff": -1.34946,
+          "lo": -2.78903,
+          "hi": 0.09284,
+          "p_one_sided": 0.9666,
+          "p_two_sided": 0.0668,
+          "n": 1000
+        },
+        {
+          "diff": -1.14591,
+          "lo": -2.54116,
+          "hi": 0.22285,
+          "p_one_sided": 0.9516,
+          "p_two_sided": 0.0968,
+          "n": 1000
+        },
+        {
+          "diff": -1.00657,
+          "lo": -2.35613,
+          "hi": 0.35015,
+          "p_one_sided": 0.9272,
+          "p_two_sided": 0.1456,
+          "n": 1000
+        }
+      ],
+      "examples": [
+        {
+          "id": "squad:37820f7a73dd4ecf866c8ec6f720f13e",
+          "question": "Who was the first American to win the Nobel Memorial Prize in Economic Sciences?",
+          "answers": [
+            "Paul Samuelson"
+          ],
+          "pred_a": "Eugene Fama",
+          "pred_b": "Paul Samuelson",
+          "winner": "b"
+        },
+        {
+          "id": "squad:574ffbaf36ff4b5a85752db3eb031102",
+          "question": "Which South Asian island nation is represented in the V&A collection?",
+          "answers": [
+            "Sri Lanka",
+            "Thailand"
+          ],
+          "pred_a": "Korea",
+          "pred_b": "Sri Lanka",
+          "winner": "b"
+        },
+        {
+          "id": "squad:6af696aa7c8540ba808d019d1aac6a82",
+          "question": "When did Kenya become an independent country?",
+          "answers": [
+            "1963",
+            "Kenya Independence Act"
+          ],
+          "pred_a": "1957",
+          "pred_b": "1963",
+          "winner": "b"
+        },
+        {
+          "id": "squad:6ea36d77292847f384ad0e431fc68d4e",
+          "question": "While competition between workers drives down wages for jobs with a high supply of worker, whose competition drives wages up for the inverse?",
+          "answers": [
+            "employers"
+          ],
+          "pred_a": "jobs that require highly developed skills, rare abilities, or a high level of risk",
+          "pred_b": "Employers",
+          "winner": "b"
+        },
+        {
+          "id": "squad:7661e63f3ee140c78bd3748eadbdbd6f",
+          "question": "Who did Jochi reportedly enlist to help him stop his father's massacres?",
+          "answers": [
+            "Sultan Muhammad"
+          ],
+          "pred_a": "Genghis Khan",
+          "pred_b": "Sultan Muhammad",
+          "winner": "b"
+        },
+        {
+          "id": "squad:0752d9d4c9ee46a192d15b59f8229ca4",
+          "question": "What would a community member need to teach informally?",
+          "answers": [
+            "knowledge or skills",
+            "anyone with knowledge or skills"
+          ],
+          "pred_a": "knowledge or skills",
+          "pred_b": "a teacher",
+          "winner": "a"
+        },
+        {
+          "id": "squad:0c02965324e04a9faa0c9d14911fd4e3",
+          "question": "This type of system is known as",
+          "answers": [
+            "a plug-n-play system",
+            "plug-n-play"
+          ],
+          "pred_a": "plug-n-play",
+          "pred_b": "AppleTalk",
+          "winner": "a"
+        },
+        {
+          "id": "squad:0e791f441c874b438714a54362506640",
+          "question": "Along with 10 Cloverfield Lane, what Paramount trailer appeared during the Super Bowl?",
+          "answers": [
+            "Teenage Mutant Ninja Turtles: Out of the Shadows"
+          ],
+          "pred_a": "Teenage Mutant Ninja Turtles: Out of the Shadows",
+          "pred_b": "10 Cloverfield Lane",
+          "winner": "a"
+        },
+        {
+          "id": "squad:17309e0e977349568764a0ba97844fe5",
+          "question": "What makes energy changes in a closed system?",
+          "answers": [
+            "nonconservative forces"
+          ],
+          "pred_a": "nonconservative forces",
+          "pred_b": "entropy increases",
+          "winner": "a"
+        },
+        {
+          "id": "squad:1fc795b79f4745568893db2b05ff7f2d",
+          "question": "What was the name of the first Doctor Who story released as an LP?",
+          "answers": [
+            "Doctor Who and the Pescatons"
+          ],
+          "pred_a": "Doctor Who and the Pescatons",
+          "pred_b": "The Chase",
+          "winner": "a"
+        }
+      ],
+      "ood": false
+    },
+    "newsqa": {
+      "n_seeds": 3,
+      "single": {
+        "em": {
+          "mean": 44.26667,
+          "std": 0.76376,
+          "n": 3
+        },
+        "f1": {
+          "mean": 62.08958,
+          "std": 0.93035,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.441,
+            "partial": 0.202,
+            "verbose": 0.117,
+            "wrong_span": 0.229,
+            "not_in_passage": 0.003,
+            "empty": 0.0,
+            "answer_truncated": 0.008
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 13,
+              "f1": 85.27473
+            },
+            "how many": {
+              "n": 54,
+              "f1": 72.61504
+            },
+            "how much": {
+              "n": 12,
+              "f1": 80.13228
+            },
+            "other": {
+              "n": 44,
+              "f1": 65.61741
+            },
+            "what": {
+              "n": 458,
+              "f1": 56.63216
+            },
+            "when": {
+              "n": 45,
+              "f1": 76.6164
+            },
+            "where": {
+              "n": 63,
+              "f1": 57.92162
+            },
+            "which": {
+              "n": 31,
+              "f1": 62.07932
+            },
+            "who": {
+              "n": 259,
+              "f1": 66.51064
+            },
+            "whom": {
+              "n": 4,
+              "f1": 50.0
+            },
+            "why": {
+              "n": 1,
+              "f1": 88.88889
+            },
+            "yes/no": {
+              "n": 16,
+              "f1": 40.82423
+            }
+          },
+          "mean_pred_words": 3.965,
+          "mean_gold_words": 3.995
+        }
+      },
+      "multi": {
+        "em": {
+          "mean": 45.26667,
+          "std": 0.70946,
+          "n": 3
+        },
+        "f1": {
+          "mean": 63.29671,
+          "std": 0.21053,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.454,
+            "partial": 0.204,
+            "verbose": 0.104,
+            "wrong_span": 0.229,
+            "not_in_passage": 0.001,
+            "empty": 0.0,
+            "answer_truncated": 0.008
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 13,
+              "f1": 88.81563
+            },
+            "how many": {
+              "n": 54,
+              "f1": 71.45977
+            },
+            "how much": {
+              "n": 12,
+              "f1": 81.79894
+            },
+            "other": {
+              "n": 44,
+              "f1": 59.70546
+            },
+            "what": {
+              "n": 458,
+              "f1": 59.50884
+            },
+            "when": {
+              "n": 45,
+              "f1": 82.73017
+            },
+            "where": {
+              "n": 63,
+              "f1": 59.91867
+            },
+            "which": {
+              "n": 31,
+              "f1": 73.97167
+            },
+            "who": {
+              "n": 259,
+              "f1": 64.01389
+            },
+            "whom": {
+              "n": 4,
+              "f1": 50.0
+            },
+            "why": {
+              "n": 1,
+              "f1": 100.0
+            },
+            "yes/no": {
+              "n": 16,
+              "f1": 32.80716
+            }
+          },
+          "mean_pred_words": 3.955,
+          "mean_gold_words": 3.995
+        }
+      },
+      "paired_em": {
+        "diff": 1.0,
+        "lo": -0.5,
+        "hi": 2.56667,
+        "p_one_sided": 0.0983,
+        "p_two_sided": 0.1966,
+        "n": 1000
+      },
+      "paired_em_per_seed": [
+        {
+          "diff": 1.3,
+          "lo": -0.8,
+          "hi": 3.5,
+          "p_one_sided": 0.1302,
+          "p_two_sided": 0.2604,
+          "n": 1000
+        },
+        {
+          "diff": 2.3,
+          "lo": -0.1,
+          "hi": 4.8,
+          "p_one_sided": 0.0352,
+          "p_two_sided": 0.0704,
+          "n": 1000
+        },
+        {
+          "diff": -0.6,
+          "lo": -2.9,
+          "hi": 1.7,
+          "p_one_sided": 0.7128,
+          "p_two_sided": 0.6308,
+          "n": 1000
+        }
+      ],
+      "paired_f1": {
+        "diff": 1.20713,
+        "lo": -0.10044,
+        "hi": 2.53191,
+        "p_one_sided": 0.034,
+        "p_two_sided": 0.068,
+        "n": 1000
+      },
+      "paired_f1_per_seed": [
+        {
+          "diff": 1.06682,
+          "lo": -0.78999,
+          "hi": 2.95308,
+          "p_one_sided": 0.135,
+          "p_two_sided": 0.27,
+          "n": 1000
+        },
+        {
+          "diff": 2.28611,
+          "lo": 0.21556,
+          "hi": 4.3712,
+          "p_one_sided": 0.0162,
+          "p_two_sided": 0.0324,
+          "n": 1000
+        },
+        {
+          "diff": 0.26846,
+          "lo": -1.60783,
+          "hi": 2.14298,
+          "p_one_sided": 0.3913,
+          "p_two_sided": 0.7826,
+          "n": 1000
+        }
+      ],
+      "examples": [
+        {
+          "id": "newsqa:014e5f5a9a98493ba20e29a3a4c478a5",
+          "question": "How many troops does Canada have in Afghanistan?",
+          "answers": [
+            "35,000."
+          ],
+          "pred_a": "2,800",
+          "pred_b": "35,000",
+          "winner": "b"
+        },
+        {
+          "id": "newsqa:143a0df7e66a473ba5804b1c75f56c86",
+          "question": "What is his age?",
+          "answers": [
+            "40-year-old"
+          ],
+          "pred_a": "40",
+          "pred_b": "40-year-old",
+          "winner": "b"
+        },
+        {
+          "id": "newsqa:1cc25c3729ab4627a29f3f11172af372",
+          "question": "Several shows were postponed to which year because of because of \"sheer magnitude\"?",
+          "answers": [
+            "2010,"
+          ],
+          "pred_a": "2009",
+          "pred_b": "2010,",
+          "winner": "b"
+        },
+        {
+          "id": "newsqa:1fc8e1310fe949df9825c423cbbba725",
+          "question": "where is the hospital?",
+          "answers": [
+            "St. Louis, Missouri."
+          ],
+          "pred_a": "London, Ontario",
+          "pred_b": "St. Louis, Missouri",
+          "winner": "b"
+        },
+        {
+          "id": "newsqa:2955002485c14b53a2044b2d8638b2fb",
+          "question": "What did the directive pertain to?",
+          "answers": [
+            "nighttime raids of Afghan homes and compounds,"
+          ],
+          "pred_a": "Afghanistan",
+          "pred_b": "nighttime raids of Afghan homes and compounds,",
+          "winner": "b"
+        },
+        {
+          "id": "newsqa:054b7315353146d4b0ad624514005ef2",
+          "question": "How many horses died?",
+          "answers": [
+            "seven"
+          ],
+          "pred_a": "Seven",
+          "pred_b": "Fourteen",
+          "winner": "a"
+        },
+        {
+          "id": "newsqa:0886bb0eeac143bcb37ebd0ecf3e17cd",
+          "question": "Who has tensions over Tehran's nuclear ambitions?",
+          "answers": [
+            "U.S."
+          ],
+          "pred_a": "U.S.",
+          "pred_b": "Iran's parliament",
+          "winner": "a"
+        },
+        {
+          "id": "newsqa:0cecc7cafa884126923093cb39466c96",
+          "question": "Ryan says Internet is an expression of freedom and should",
+          "answers": [
+            "stay that way.\""
+          ],
+          "pred_a": "stay that way",
+          "pred_b": "one of the most magnificent expressions of freedom and free enterprise in history",
+          "winner": "a"
+        },
+        {
+          "id": "newsqa:2666396df440428abe681afcaf00c173",
+          "question": "Who makes Sky roadsters?",
+          "answers": [
+            "Saturn"
+          ],
+          "pred_a": "Saturn",
+          "pred_b": "General Motors",
+          "winner": "a"
+        },
+        {
+          "id": "newsqa:2683ec5ca85f422da7ebd56b903a78ab",
+          "question": "What did Schlesselman threaten to do?",
+          "answers": [
+            "kill then-Sen. Obama"
+          ],
+          "pred_a": "kill then-Sen. Obama",
+          "pred_b": "murder dozens of people with a focus on murdering African-Americans",
+          "winner": "a"
+        }
+      ],
+      "ood": false
+    },
+    "triviaqa": {
+      "n_seeds": 3,
+      "single": {
+        "em": {
+          "mean": 65.9,
+          "std": 1.0,
+          "n": 3
+        },
+        "f1": {
+          "mean": 72.81315,
+          "std": 0.9329,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.669,
+            "partial": 0.028,
+            "verbose": 0.099,
+            "wrong_span": 0.185,
+            "not_in_passage": 0.002,
+            "empty": 0.0,
+            "answer_truncated": 0.017
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 3,
+              "f1": 66.66667
+            },
+            "how many": {
+              "n": 11,
+              "f1": 81.81818
+            },
+            "other": {
+              "n": 250,
+              "f1": 73.15589
+            },
+            "what": {
+              "n": 270,
+              "f1": 72.49532
+            },
+            "when": {
+              "n": 2,
+              "f1": 50.0
+            },
+            "where": {
+              "n": 11,
+              "f1": 57.57576
+            },
+            "which": {
+              "n": 331,
+              "f1": 73.5218
+            },
+            "who": {
+              "n": 118,
+              "f1": 81.97034
+            },
+            "whom": {
+              "n": 2,
+              "f1": 0.0
+            },
+            "yes/no": {
+              "n": 2,
+              "f1": 50.0
+            }
+          },
+          "mean_pred_words": 1.971,
+          "mean_gold_words": 1.433
+        }
+      },
+      "multi": {
+        "em": {
+          "mean": 67.86667,
+          "std": 1.19304,
+          "n": 3
+        },
+        "f1": {
+          "mean": 73.82775,
+          "std": 1.1393,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.669,
+            "partial": 0.062,
+            "verbose": 0.039,
+            "wrong_span": 0.19,
+            "not_in_passage": 0.023,
+            "empty": 0.0,
+            "answer_truncated": 0.017
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 3,
+              "f1": 66.66667
+            },
+            "how many": {
+              "n": 11,
+              "f1": 81.81818
+            },
+            "other": {
+              "n": 250,
+              "f1": 73.8419
+            },
+            "what": {
+              "n": 270,
+              "f1": 72.12346
+            },
+            "when": {
+              "n": 2,
+              "f1": 50.0
+            },
+            "where": {
+              "n": 11,
+              "f1": 54.54545
+            },
+            "which": {
+              "n": 331,
+              "f1": 70.93152
+            },
+            "who": {
+              "n": 118,
+              "f1": 78.80549
+            },
+            "whom": {
+              "n": 2,
+              "f1": 50.0
+            },
+            "yes/no": {
+              "n": 2,
+              "f1": 50.0
+            }
+          },
+          "mean_pred_words": 1.552,
+          "mean_gold_words": 1.433
+        }
+      },
+      "paired_em": {
+        "diff": 1.96667,
+        "lo": -0.4,
+        "hi": 4.36667,
+        "p_one_sided": 0.0551,
+        "p_two_sided": 0.1102,
+        "n": 1000
+      },
+      "paired_em_per_seed": [
+        {
+          "diff": 0.0,
+          "lo": -2.9,
+          "hi": 2.9,
+          "p_one_sided": 0.5144,
+          "p_two_sided": 1.0,
+          "n": 1000
+        },
+        {
+          "diff": 4.3,
+          "lo": 1.4,
+          "hi": 7.1,
+          "p_one_sided": 0.0014,
+          "p_two_sided": 0.0028,
+          "n": 1000
+        },
+        {
+          "diff": 1.6,
+          "lo": -1.3,
+          "hi": 4.5,
+          "p_one_sided": 0.1461,
+          "p_two_sided": 0.2922,
+          "n": 1000
+        }
+      ],
+      "paired_f1": {
+        "diff": 1.01461,
+        "lo": -0.90663,
+        "hi": 2.95406,
+        "p_one_sided": 0.1599,
+        "p_two_sided": 0.3198,
+        "n": 1000
+      },
+      "paired_f1_per_seed": [
+        {
+          "diff": -1.09307,
+          "lo": -3.46131,
+          "hi": 1.37029,
+          "p_one_sided": 0.814,
+          "p_two_sided": 0.372,
+          "n": 1000
+        },
+        {
+          "diff": 3.0364,
+          "lo": 0.63452,
+          "hi": 5.42783,
+          "p_one_sided": 0.0062,
+          "p_two_sided": 0.0124,
+          "n": 1000
+        },
+        {
+          "diff": 1.10049,
+          "lo": -1.29416,
+          "hi": 3.46899,
+          "p_one_sided": 0.1868,
+          "p_two_sided": 0.3736,
+          "n": 1000
+        }
+      ],
+      "examples": [
+        {
+          "id": "triviaqa:00fed8eae8de473990edde8d3682ebbd",
+          "question": "\"What year did Jean-Francois Champollion publish the first correct translation of Egyptian hieroglyphs from the Rosetta Stone, the Roman Catholic Church take Galileo Galilei's \"\"Dialogue\"\" off their list of banned books, and Britain repeal the death penalty for over 100 crimes?\"",
+          "answers": [
+            "1822"
+          ],
+          "pred_a": "1803",
+          "pred_b": "1822",
+          "winner": "b"
+        },
+        {
+          "id": "triviaqa:05e324d5d34c40aebeb610530c5e8439",
+          "question": "Which British artist\u2019s works include \u2018The First Real Target\u2019?",
+          "answers": [
+            "peter blake",
+            "sir peter blake"
+          ],
+          "pred_a": "Kenneth Noland and Jasper Johns",
+          "pred_b": "peter blake",
+          "winner": "b"
+        },
+        {
+          "id": "triviaqa:081f574c984742bdabc26b517a3ac2f1",
+          "question": "Who was the main female singer with the groups Jefferson Airplane, Jefferson Starship and Starship?",
+          "answers": [
+            "grace slick"
+          ],
+          "pred_a": "Cathy Richardson",
+          "pred_b": "grace slick",
+          "winner": "b"
+        },
+        {
+          "id": "triviaqa:084c9a7b135647f99afd1d710e5fdf4c",
+          "question": "In humans, the medical condition prepatellar bursitis affects which part of the body?",
+          "answers": [
+            "knee",
+            "knees"
+          ],
+          "pred_a": "Kneecap",
+          "pred_b": "knee",
+          "winner": "b"
+        },
+        {
+          "id": "triviaqa:0cc91239a5ff43208ec0094e981fe4cc",
+          "question": "Stalactites grow down from the top of cave. What grows up from the floor of a cave?",
+          "answers": [
+            "stalagmites",
+            "stalagmite"
+          ],
+          "pred_a": "calcite",
+          "pred_b": "stalagmites",
+          "winner": "b"
+        },
+        {
+          "id": "triviaqa:089298a258a645278c1004eb73cf2620",
+          "question": "Which handheld electronic toy had to be treated as a pet?",
+          "answers": [
+            "tamagotchi"
+          ],
+          "pred_a": "Tamagotchi",
+          "pred_b": "talkboy",
+          "winner": "a"
+        },
+        {
+          "id": "triviaqa:08cc8fdcde6d48b680f547884a8caeae",
+          "question": "The world's deepest known cave is in which country?",
+          "answers": [
+            "georgia"
+          ],
+          "pred_a": "Georgia",
+          "pred_b": "georgian",
+          "winner": "a"
+        },
+        {
+          "id": "triviaqa:100be9f058664d12a5ea94b993df3cea",
+          "question": "Which film about a submarine had as one of its stars Denzil Washington, whose character had violent disagreements with his Captain played by Gene Hackman?",
+          "answers": [
+            "crimson tide"
+          ],
+          "pred_a": "Crimson Tide",
+          "pred_b": "submarine",
+          "winner": "a"
+        },
+        {
+          "id": "triviaqa:1354db9e77ff4761932ff31fd171d4d5",
+          "question": "Proposed in 1776, 'E pluribus unum' ('One from many'), is on the national seal and banknotes of which nation?",
+          "answers": [
+            "states of america",
+            "america",
+            "united states"
+          ],
+          "pred_a": "United States",
+          "pred_b": "us",
+          "winner": "a"
+        },
+        {
+          "id": "triviaqa:1b3ebd17d115428baf12097783cf0031",
+          "question": "What is the name of both a tire company and a restaurant guide?",
+          "answers": [
+            "michelin"
+          ],
+          "pred_a": "Michelin",
+          "pred_b": "micelin",
+          "winner": "a"
+        }
+      ],
+      "ood": false
+    },
+    "bioasq": {
+      "n_seeds": 3,
+      "single": {
+        "em": {
+          "mean": 61.16667,
+          "std": 0.80208,
+          "n": 3
+        },
+        "f1": {
+          "mean": 74.25874,
+          "std": 0.74055,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.611,
+            "partial": 0.124,
+            "verbose": 0.106,
+            "wrong_span": 0.138,
+            "not_in_passage": 0.006,
+            "empty": 0.0,
+            "answer_truncated": 0.015
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 7,
+              "f1": 94.28571
+            },
+            "how many": {
+              "n": 6,
+              "f1": 75.25253
+            },
+            "other": {
+              "n": 73,
+              "f1": 86.25571
+            },
+            "what": {
+              "n": 272,
+              "f1": 69.97082
+            },
+            "where": {
+              "n": 11,
+              "f1": 29.00433
+            },
+            "which": {
+              "n": 618,
+              "f1": 76.00177
+            },
+            "yes/no": {
+              "n": 13,
+              "f1": 69.23077
+            }
+          },
+          "mean_pred_words": 1.883,
+          "mean_gold_words": 1.706
+        }
+      },
+      "multi": {
+        "em": {
+          "mean": 60.13333,
+          "std": 0.64291,
+          "n": 3
+        },
+        "f1": {
+          "mean": 73.92382,
+          "std": 0.61727,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.604,
+            "partial": 0.164,
+            "verbose": 0.075,
+            "wrong_span": 0.136,
+            "not_in_passage": 0.005,
+            "empty": 0.0,
+            "answer_truncated": 0.016
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 7,
+              "f1": 97.95918
+            },
+            "how many": {
+              "n": 6,
+              "f1": 75.25253
+            },
+            "other": {
+              "n": 73,
+              "f1": 81.50685
+            },
+            "what": {
+              "n": 272,
+              "f1": 67.83014
+            },
+            "where": {
+              "n": 11,
+              "f1": 18.39827
+            },
+            "which": {
+              "n": 618,
+              "f1": 77.18365
+            },
+            "yes/no": {
+              "n": 13,
+              "f1": 66.66667
+            }
+          },
+          "mean_pred_words": 1.733,
+          "mean_gold_words": 1.706
+        }
+      },
+      "paired_em": {
+        "diff": -1.03333,
+        "lo": -2.36667,
+        "hi": 0.33333,
+        "p_one_sided": 0.9333,
+        "p_two_sided": 0.135,
+        "n": 1000
+      },
+      "paired_em_per_seed": [
+        {
+          "diff": -0.7,
+          "lo": -3.0,
+          "hi": 1.7,
+          "p_one_sided": 0.7324,
+          "p_two_sided": 0.5944,
+          "n": 1000
+        },
+        {
+          "diff": -2.6,
+          "lo": -4.8,
+          "hi": -0.4,
+          "p_one_sided": 0.9905,
+          "p_two_sided": 0.024,
+          "n": 1000
+        },
+        {
+          "diff": 0.2,
+          "lo": -2.1,
+          "hi": 2.5,
+          "p_one_sided": 0.4486,
+          "p_two_sided": 0.8972,
+          "n": 1000
+        }
+      ],
+      "paired_f1": {
+        "diff": -0.33491,
+        "lo": -1.40202,
+        "hi": 0.77145,
+        "p_one_sided": 0.7265,
+        "p_two_sided": 0.547,
+        "n": 1000
+      },
+      "paired_f1_per_seed": [
+        {
+          "diff": -0.32281,
+          "lo": -2.08121,
+          "hi": 1.47739,
+          "p_one_sided": 0.6368,
+          "p_two_sided": 0.7264,
+          "n": 1000
+        },
+        {
+          "diff": -1.53002,
+          "lo": -3.18121,
+          "hi": 0.14816,
+          "p_one_sided": 0.9642,
+          "p_two_sided": 0.0716,
+          "n": 1000
+        },
+        {
+          "diff": 0.84809,
+          "lo": -0.90227,
+          "hi": 2.62675,
+          "p_one_sided": 0.1718,
+          "p_two_sided": 0.3436,
+          "n": 1000
+        }
+      ],
+      "examples": [
+        {
+          "id": "bioasq:2127733422e64157bc1703f3baf19fbd",
+          "question": "Are human enhancers or promoters evolving faster?",
+          "answers": [
+            "enhancers"
+          ],
+          "pred_a": "high divergence of cis-regulatory elements between species",
+          "pred_b": "enhancers",
+          "winner": "b"
+        },
+        {
+          "id": "bioasq:212829ec9421495797a732770b08731b",
+          "question": "Which disease can be categorized using the Koos grading system?",
+          "answers": [
+            "vestibular schwannoma"
+          ],
+          "pred_a": "Koos Grade \u22653",
+          "pred_b": "vestibular schwannoma",
+          "winner": "b"
+        },
+        {
+          "id": "bioasq:2a29c11eb40348279c1e857ce85d292a",
+          "question": "What chromosome is affected in Turner's syndrome?",
+          "answers": [
+            "X"
+          ],
+          "pred_a": "X-chromosome",
+          "pred_b": "X",
+          "winner": "b"
+        },
+        {
+          "id": "bioasq:2f91c196e1e14427999116eb471acf92",
+          "question": "Which is the primary protein component of Lewy bodies?",
+          "answers": [
+            "alpha-synuclein",
+            "\u03b1-synuclein",
+            "\u03b1Syn"
+          ],
+          "pred_a": "tau",
+          "pred_b": "alpha-synuclein",
+          "winner": "b"
+        },
+        {
+          "id": "bioasq:3288fb6fd40c44d78d4fdd8b337240a0",
+          "question": "Which is the histone residue methylated by MLL1?",
+          "answers": [
+            "H3K4"
+          ],
+          "pred_a": "lysine 4",
+          "pred_b": "H3K4",
+          "winner": "b"
+        },
+        {
+          "id": "bioasq:0a6e92fd38084c6080d63bdcfc202f5b",
+          "question": "Which syndrome is associated with mutations in the LYST gene?",
+          "answers": [
+            "Chediak-Higashi syndrome"
+          ],
+          "pred_a": "Chediak-Higashi syndrome",
+          "pred_b": "CHS",
+          "winner": "a"
+        },
+        {
+          "id": "bioasq:0bb3119e6d6d48ffa24785cf272e280e",
+          "question": "What tyrosine kinase, involved in a Philadelphia- chromosome positive chronic myelogenous leukemia, is the target of Imatinib (Gleevec)?",
+          "answers": [
+            "BCR-ABL"
+          ],
+          "pred_a": "BCR-ABL",
+          "pred_b": "ABL-tyrosine kinase",
+          "winner": "a"
+        },
+        {
+          "id": "bioasq:0ed20ead469f4406ac6977afdfa3ba6e",
+          "question": "Which is the target of bortezomib used in cancer therapy?",
+          "answers": [
+            "The ubiquitin/proteasome pathway"
+          ],
+          "pred_a": "ubiquitin-proteasome pathway",
+          "pred_b": "proteasome",
+          "winner": "a"
+        },
+        {
+          "id": "bioasq:10de1ab61b0a47219444a92bc141d960",
+          "question": "What tissue is most affected in Ehlers-Danlos syndromes?",
+          "answers": [
+            "connective tissue"
+          ],
+          "pred_a": "connective tissue",
+          "pred_b": "skin and joints",
+          "winner": "a"
+        },
+        {
+          "id": "bioasq:1d9e22d6ebaa441090217077e2711e57",
+          "question": "Which NADPH oxidase family member requires interaction with NOXO1 for function?",
+          "answers": [
+            "NADPH oxidase 1",
+            "NOX1",
+            "nicotinamide adenine dinucleotide phosphate-oxidase 1"
+          ],
+          "pred_a": "NOX1",
+          "pred_b": "NOXA1",
+          "winner": "a"
+        }
+      ],
+      "ood": true
+    },
+    "duorc": {
+      "n_seeds": 3,
+      "single": {
+        "em": {
+          "mean": 49.33333,
+          "std": 0.83865,
+          "n": 3
+        },
+        "f1": {
+          "mean": 58.03674,
+          "std": 0.83147,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.503,
+            "partial": 0.079,
+            "verbose": 0.061,
+            "wrong_span": 0.282,
+            "not_in_passage": 0.004,
+            "empty": 0.0,
+            "answer_truncated": 0.071
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 23,
+              "f1": 49.06079
+            },
+            "how many": {
+              "n": 14,
+              "f1": 70.2381
+            },
+            "how much": {
+              "n": 3,
+              "f1": 100.0
+            },
+            "other": {
+              "n": 22,
+              "f1": 41.76768
+            },
+            "what": {
+              "n": 288,
+              "f1": 69.01816
+            },
+            "when": {
+              "n": 7,
+              "f1": 57.14286
+            },
+            "where": {
+              "n": 80,
+              "f1": 51.99306
+            },
+            "which": {
+              "n": 27,
+              "f1": 73.45679
+            },
+            "who": {
+              "n": 518,
+              "f1": 55.40777
+            },
+            "whom": {
+              "n": 6,
+              "f1": 0.0
+            },
+            "whose": {
+              "n": 3,
+              "f1": 88.88889
+            },
+            "why": {
+              "n": 5,
+              "f1": 40.0
+            },
+            "yes/no": {
+              "n": 4,
+              "f1": 2.85714
+            }
+          },
+          "mean_pred_words": 2.12,
+          "mean_gold_words": 1.781
+        }
+      },
+      "multi": {
+        "em": {
+          "mean": 48.6,
+          "std": 1.70587,
+          "n": 3
+        },
+        "f1": {
+          "mean": 58.52213,
+          "std": 1.18143,
+          "n": 3
+        },
+        "errors": {
+          "categories": {
+            "correct": 0.491,
+            "partial": 0.084,
+            "verbose": 0.062,
+            "wrong_span": 0.278,
+            "not_in_passage": 0.011,
+            "empty": 0.0,
+            "answer_truncated": 0.074
+          },
+          "f1_by_question_type": {
+            "how": {
+              "n": 23,
+              "f1": 57.72069
+            },
+            "how many": {
+              "n": 14,
+              "f1": 75.95238
+            },
+            "how much": {
+              "n": 3,
+              "f1": 100.0
+            },
+            "other": {
+              "n": 22,
+              "f1": 41.0101
+            },
+            "what": {
+              "n": 288,
+              "f1": 64.31386
+            },
+            "when": {
+              "n": 7,
+              "f1": 57.14286
+            },
+            "where": {
+              "n": 80,
+              "f1": 51.01019
+            },
+            "which": {
+              "n": 27,
+              "f1": 70.8642
+            },
+            "who": {
+              "n": 518,
+              "f1": 56.71079
+            },
+            "whom": {
+              "n": 6,
+              "f1": 16.66667
+            },
+            "whose": {
+              "n": 3,
+              "f1": 88.88889
+            },
+            "why": {
+              "n": 5,
+              "f1": 53.33333
+            },
+            "yes/no": {
+              "n": 4,
+              "f1": 0.0
+            }
+          },
+          "mean_pred_words": 1.995,
+          "mean_gold_words": 1.781
+        }
+      },
+      "paired_em": {
+        "diff": -0.73333,
+        "lo": -2.23333,
+        "hi": 0.76667,
+        "p_one_sided": 0.8356,
+        "p_two_sided": 0.3338,
+        "n": 1000
+      },
+      "paired_em_per_seed": [
+        {
+          "diff": -1.2,
+          "lo": -3.4,
+          "hi": 1.0,
+          "p_one_sided": 0.872,
+          "p_two_sided": 0.2934,
+          "n": 1000
+        },
+        {
+          "diff": -2.2,
+          "lo": -4.5,
+          "hi": 0.1,
+          "p_one_sided": 0.9735,
+          "p_two_sided": 0.0618,
+          "n": 1000
+        },
+        {
+          "diff": 1.2,
+          "lo": -0.9,
+          "hi": 3.3,
+          "p_one_sided": 0.1385,
+          "p_two_sided": 0.277,
+          "n": 1000
+        }
+      ],
+      "paired_f1": {
+        "diff": 0.4854,
+        "lo": -0.79997,
+        "hi": 1.78551,
+        "p_one_sided": 0.2287,
+        "p_two_sided": 0.4574,
+        "n": 1000
+      },
+      "paired_f1_per_seed": [
+        {
+          "diff": -0.41075,
+          "lo": -2.28708,
+          "hi": 1.45701,
+          "p_one_sided": 0.6685,
+          "p_two_sided": 0.663,
+          "n": 1000
+        },
+        {
+          "diff": -0.55286,
+          "lo": -2.60873,
+          "hi": 1.48769,
+          "p_one_sided": 0.6974,
+          "p_two_sided": 0.6052,
+          "n": 1000
+        },
+        {
+          "diff": 2.4198,
+          "lo": 0.53419,
+          "hi": 4.33597,
+          "p_one_sided": 0.0057,
+          "p_two_sided": 0.0114,
+          "n": 1000
+        }
+      ],
+      "examples": [
+        {
+          "id": "duorc:0e4e839a9e1641af9c7bbf50297412f0",
+          "question": "Who is Ruth Carter Stapleton?",
+          "answers": [
+            "A Christian activist and sister of President Jimmy Carter"
+          ],
+          "pred_a": "Hanover",
+          "pred_b": "a Christian activist and sister of President Jimmy Carter",
+          "winner": "b"
+        },
+        {
+          "id": "duorc:1ae8fa7108d94f03873460d7bca1a0a0",
+          "question": "Who does Shifu decides is ready to receive the Dragon Scroll?",
+          "answers": [
+            "Tai Lung's",
+            "Po"
+          ],
+          "pred_a": "Dragon Warrior",
+          "pred_b": "Po",
+          "winner": "b"
+        },
+        {
+          "id": "duorc:1b9b22ee45ef4aacb9bcfe4ec9af751d",
+          "question": "Who does Minna Tipton say is the real heir?",
+          "answers": [
+            "Cedric",
+            "no anwer",
+            "Her son"
+          ],
+          "pred_a": "British lawyer Mr. Havisham",
+          "pred_b": "Cedric",
+          "winner": "b"
+        },
+        {
+          "id": "duorc:1eca34813ce042b1b2d4d07afbb19fde",
+          "question": "Who presents letters to Roxanne?",
+          "answers": [
+            "Chris"
+          ],
+          "pred_a": "Bales",
+          "pred_b": "Chris",
+          "winner": "b"
+        },
+        {
+          "id": "duorc:1fb78da3c3474b00868713b0f59eff4d",
+          "question": "Who is the  one-man anti-terrorist squadron?",
+          "answers": [
+            "Jack"
+          ],
+          "pred_a": "Kate Stockton",
+          "pred_b": "Jack",
+          "winner": "b"
+        },
+        {
+          "id": "duorc:1e727fdb73b14a89b812ebb622ca5d44",
+          "question": "What is the name of the newly hatched Digimon",
+          "answers": [
+            "Botamon"
+          ],
+          "pred_a": "Botamon",
+          "pred_b": "Parrotmon",
+          "winner": "a"
+        },
+        {
+          "id": "duorc:21d6b758e18e45cbbc93d598bd817978",
+          "question": "What kind of marriage does Pamela Dickson have?",
+          "answers": [
+            "Dull"
+          ],
+          "pred_a": "dull",
+          "pred_b": "single",
+          "winner": "a"
+        },
+        {
+          "id": "duorc:2c2c3ff4137345c0af16ebc162515db0",
+          "question": "Who is pregnant in two lovers movie?",
+          "answers": [
+            "Michelle"
+          ],
+          "pred_a": "Michelle",
+          "pred_b": "Leonard",
+          "winner": "a"
+        },
+        {
+          "id": "duorc:2ddf85d78efd4231ab24f9aa73bdd513",
+          "question": "Instead of a cure, what does Blade ask for?",
+          "answers": [
+            "create a new serum instead",
+            "Help",
+            "a new serum instead"
+          ],
+          "pred_a": "help",
+          "pred_b": "a drink",
+          "winner": "a"
+        },
+        {
+          "id": "duorc:31f807d1a4d64a168917384609fc7d91",
+          "question": "Who do Stubby and bunny run into?",
+          "answers": [
+            "Chaco"
+          ],
+          "pred_a": "Chaco",
+          "pred_b": "a group of Christian missionaries",
+          "winner": "a"
+        }
+      ],
+      "ood": true
+    }
+  }
+}

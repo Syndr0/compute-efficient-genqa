@@ -134,7 +134,7 @@ def table_rq3(rq3: dict) -> str:
         rows.append(f"{r['batch_size']} & {r['examples_per_s']:.1f} & {r['gen_tokens_per_s']:.0f} & "
                     f"{1000 * r['batch_latency_mean_s']:.0f} & {1000 * r['batch_latency_p95_s']:.0f} & "
                     f"{r['peak_mem_gb']:.2f} & {100 * r['padding_fraction']:.1f} & "
-                    f"{(u['examples_per_s'] if u else float('nan')):.1f} & {r['f1']:.1f} \\\\")
+                    f"{(format(u['examples_per_s'], '.1f') if u else '--')} & {r['f1']:.1f} \\\\")
     for r in rq3["rows"]:
         if r.get("oom") and r["group"] == "batch_sweep":
             rows.append(f"{r['batch_size']} & \\multicolumn{{8}}{{c}}{{out of memory}} \\\\")
@@ -163,7 +163,7 @@ def table_rq3_ablation(rq3: dict) -> str:
                         f"{r['peak_mem_gb']:.2f} / {a['peak_mem_gb']:.2f} \\\\")
     return "\n".join([
         r"\begin{tabular}{lrrrrr}", r"\toprule",
-        r"Comparison & Batch & Ex/s (variant) & Ex/s (default) & Speed-up & Peak mem (GB) \\", r"\midrule",
+        r"Variant vs.\ default & Batch & Ex/s (variant) & Ex/s (default) & Default speed-up & Peak mem (GB) \\", r"\midrule",
         *rows, r"\bottomrule", r"\end{tabular}",
     ])
 

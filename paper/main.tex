@@ -17,13 +17,14 @@
 \usepackage{subcaption}
 
 \newcommand{\RQ}[1]{\textbf{RQ#1}}
+\newcommand{\ci}[2]{\,[#1,\,#2]}
 
 \title{How Far Can 0.6B Parameters Go?\\Compute-Efficient Generative Question Answering\\with LoRA Fine-Tuning}
 
 \author{%
   Author One \And Author Two \And Author Three \And Author Four \And Author Five \\
-  EN.737 Large Language Models, Johns Hopkins University \\
-  \texttt{\url{https://github.com/Syndr0/compute-efficient-genqa}}
+  EN.737 Large Language Models --- course project \\
+  \url{https://github.com/Syndr0/compute-efficient-genqa}
 }
 
 \begin{document}
@@ -31,54 +32,74 @@
 \maketitle
 
 \begin{abstract}
-%%ABSTRACT%%
+We study how much compute a small generative language model needs to become a competent
+context-grounded question answerer, whether broader training data buys out-of-domain robustness,
+and how to serve the result efficiently. Using Qwen3-0.6B, LoRA, and the MRQA benchmark collection
+under a single controlled pipeline, we find that (i) adaptation is extremely cheap: 250k training
+tokens (578 questions, 20 seconds on one GPU) raise mean F1 from 41.4 (3-shot prompting) to 70.6
+in-domain and from 34.3 to 62.6 on unseen BioASQ and DuoRC, and every further $4\times$ increase in
+budget adds only about 2 F1 up to 16M tokens; (ii) at a fixed 4M-token budget, mixing SQuAD, NewsQA
+and TriviaQA does \emph{not} improve out-of-domain F1 over SQuAD-only training (paired differences
+$-0.33$ and $+0.49$ F1, both 95\% CIs include zero over three seeds), contrary to our pre-registered
+hypothesis, while it costs 1.2 F1 on SQuAD itself; and (iii) static batching raises inference throughput
+$7.1\times$ (to 116 questions/s) at batch size 64 before it declines, at the cost of $9\times$ higher
+latency, while length-sorting the batch nearly doubles throughput at large batch sizes and quality is
+unchanged throughout. We release code, configurations, logs and per-question predictions.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 
 Small generative language models are attractive for question answering (QA) over a provided
-passage: they run on a single commodity GPU, can be adapted cheaply, and produce free-form
-answers without task-specific span-extraction heads. How much compute such adaptation needs,
-how well the adapted model transfers to unseen domains, and how to serve it efficiently are
-practical questions that are rarely answered together under one controlled setup.
+passage: they run on a single commodity GPU, can be adapted cheaply, and produce free-form answers
+without a task-specific span-extraction head. How much compute such adaptation needs, how well the
+adapted model transfers to unseen domains, and how to serve it efficiently are practical questions
+that are rarely answered together under one controlled setup.
 
-We study these questions with \textbf{Qwen3-0.6B}~\citep{qwen3} adapted by low-rank adaptation
-(LoRA)~\citep{hu2022lora} to context-grounded, single-turn QA on the MRQA benchmark
-collection~\citep{fisch2019mrqa}. Every experiment shares one model, one prompt, one LoRA
-configuration and one evaluation pipeline, and the training data is controlled by an exact
-\emph{training-token budget}. We ask:
+We study them with \textbf{Qwen3-0.6B}~\citep{qwen3} adapted by low-rank adaptation
+(LoRA)~\citep{hu2022lora} to context-grounded single-turn QA on the MRQA collection~\citep{fisch2019mrqa}.
+All experiments share one model, one prompt, one LoRA configuration and one evaluation pipeline, and the
+training data are controlled by an exact \emph{training-token budget}. We ask:
 \begin{itemize}
   \item \RQ{1} (training efficiency): how does QA quality change with the LoRA training-token budget, relative to zero- and few-shot prompting?
   \item \RQ{2} (generalization): at a fixed budget, does multi-source fine-tuning (SQuAD + NewsQA + TriviaQA) generalize better to unseen domains (BioASQ, DuoRC) than SQuAD-only fine-tuning?
-  \item \RQ{3} (inference efficiency): how does the inference batch size trade throughput against latency and GPU memory for the fine-tuned model?
+  \item \RQ{3} (inference efficiency): how does the inference batch size trade throughput against latency and GPU memory?
 \end{itemize}
-Hypotheses and quantitative predictions were fixed before the main runs and are evaluated in
-Appendix~\ref{app:hypotheses}.
+Hypotheses and quantitative predictions were fixed before the main runs; Appendix~\ref{app:hypotheses}
+compares them with the outcomes.
 
-%%CONTRIBUTIONS%%
+\paragraph{Contributions.} (1) A controlled, fully reproducible pipeline for token-budgeted LoRA
+fine-tuning and evaluation of a small generative QA model, including passage-level splits, overlap
+filtering, paired-bootstrap statistics and error analysis. (2) Evidence that the step from prompting to
+\emph{any} fine-tuning dominates the returns: 0.25M tokens recover most of the attainable F1 and further
+budget yields a roughly log-linear $\approx$2 F1 per $4\times$ tokens. (3) A negative result on data
+diversity: at equal token budgets, multi-source training does not improve out-of-domain F1 for this
+model, and per-source validation loss is a misleading proxy for cross-domain answer quality.
+(4) An inference characterisation showing an interior throughput optimum for static batching and the
+large effect of length-sorting.
 
 \section{Related work}
 \label{sec:related}
 
-\paragraph{Parameter-efficient adaptation.} LoRA~\citep{hu2022lora} trains low-rank updates to
-frozen weight matrices and is the default way to adapt LLMs on limited hardware; QLoRA~\citep{dettmers2023qlora}
-further quantizes the frozen base. Prior work shows that a small amount of high-quality supervised
-data can suffice to change a model's output behaviour~\citep{zhou2023lima}; we quantify how much
-data is needed for extractive-style QA in terms of training tokens rather than examples.
+\paragraph{Parameter-efficient adaptation.} LoRA~\citep{hu2022lora} trains low-rank updates to frozen
+weight matrices and is the default way to adapt LLMs on limited hardware; QLoRA~\citep{dettmers2023qlora}
+additionally quantizes the frozen base. A small amount of supervised data can suffice to change a
+model's output behaviour~\citep{zhou2023lima}; we quantify this for context-grounded QA in units of
+training tokens and GPU time.
 
 \paragraph{Generalization in reading comprehension.} The MRQA shared task~\citep{fisch2019mrqa}
-standardised six training and six held-out QA datasets to measure out-of-domain transfer. Training
-on several sources was found to improve robustness of extractive models~\citep{talmor2019multiqa,fisch2019mrqa},
-and multi-format training benefits generative QA models~\citep{khashabi2020unifiedqa,raffel2020t5}.
-These studies typically compare mixtures of different total sizes; we hold the token budget fixed so
-that the comparison isolates data diversity from data quantity.
+standardised six training and six held-out QA datasets to measure out-of-domain transfer. Training on
+several sources improved the robustness of extractive models~\citep{talmor2019multiqa,fisch2019mrqa},
+and multi-format training benefits generative QA~\citep{khashabi2020unifiedqa,raffel2020t5}. Such
+comparisons usually confound diversity with data quantity; we hold the token budget fixed. Domain
+shift and continued adaptation are discussed by \citet{gururangan2020dontstop}.
 
 \paragraph{Compute budgets and inference.} Scaling studies relate loss to parameters and training
-tokens~\citep{kaplan2020scaling,hoffmann2022chinchilla}. For serving, batching amortizes the
-weight reads of memory-bound autoregressive decoding~\citep{pope2023inference}, and systems such as
-Orca~\citep{yu2022orca} and vLLM~\citep{kwon2023vllm} schedule requests dynamically. We measure the
-basic static-batching trade-off that these systems build on.
+tokens~\citep{kaplan2020scaling,hoffmann2022chinchilla}. Autoregressive decoding is memory-bound, so
+batching amortizes weight reads~\citep{pope2023inference}; serving systems such as Orca~\citep{yu2022orca}
+and vLLM~\citep{kwon2023vllm} schedule requests dynamically and IO-aware kernels speed up
+attention~\citep{dao2022flashattention}. We measure the basic static-batching trade-off these systems
+build on.
 
 \section{Experimental setup}
 \label{sec:setup}
@@ -86,71 +107,227 @@ basic static-batching trade-off that these systems build on.
 \paragraph{Data.} We use the MRQA 2019 versions~\citep{fisch2019mrqa} of SQuAD~\citep{rajpurkar2016squad},
 NewsQA~\citep{trischler2017newsqa} and TriviaQA~\citep{joshi2017triviaqa} (web) for training and
 in-domain (ID) evaluation, and BioASQ~\citep{tsatsaronis2015bioasq} and DuoRC
-(ParaphraseRC)~\citep{saha2018duorc} as out-of-domain (OOD) test sets that are never used for
-training or model selection. Training pools are capped at 50k questions per source. From each pool we
-hold out whole passages (300 questions) as a development set used only for validation loss, so no
-passage appears in both. ID test sets are drawn from the MRQA validation splits and OOD sets from
-the MRQA test split; eval questions whose passage occurs verbatim (after normalisation) in a training
-pool are removed before sub-sampling 1,000 questions per set (Table~\ref{tab:data}). MRQA markup
-tokens are converted to plain text.
+(ParaphraseRC)~\citep{saha2018duorc} as out-of-domain (OOD) test sets that are never used for training
+or model selection. Training pools are capped at 50k questions per source. From each pool we hold out
+whole passages (300 questions) as a development set used only for validation loss. ID test sets come
+from the MRQA validation splits and OOD sets from the MRQA test split. Eval questions whose passage
+also occurs in a training pool (after whitespace and case normalisation) are removed before sampling
+1,000 questions per set; this removed 552 NewsQA and 601 TriviaQA candidates
+(Table~\ref{tab:data} in Appendix~\ref{app:data}). MRQA markup tokens are converted to plain text.
 
-\paragraph{Task format and model.} Each input is one chat turn: a system instruction asking for the
-shortest answer span copied from the passage, followed by \texttt{Passage: \dots\ Question: \dots}.
-Qwen3's thinking mode is disabled and passages are truncated to 768 tokens (at test time the head
-of the passage is kept; for training the window is moved to contain the answer). Few-shot prompting
-prepends three fixed short SQuAD training examples as earlier chat turns~\citep{brown2020gpt3}.
-Answers are generated greedily (at most 32 tokens) and the first line is kept.
+\paragraph{Task format and model.} Each input is a single chat turn: a system instruction asking for
+the shortest answer span copied from the passage, followed by \texttt{Passage: \dots\ Question: \dots}.
+Qwen3's thinking mode is disabled and passages are truncated to 768 tokens (at test time the head of
+the passage is kept; for training the window is moved to contain the answer). Few-shot prompting
+prepends three fixed short SQuAD training examples as earlier chat turns~\citep{brown2020gpt3}. Answers
+are decoded greedily (at most 32 tokens) and the first line is kept.
 
-\paragraph{LoRA fine-tuning under a token budget.} LoRA adapters (rank 16, $\alpha{=}32$, dropout
-0.05) are attached to all attention and MLP projections, giving 10.1M trainable parameters (1.7\% of
-the model). We train with AdamW, learning rate $2{\times}10^{-4}$, 5\% warm-up and cosine decay,
-16 sequences per optimizer step and the loss on answer tokens only. A budget $B$ means that examples
-are drawn without replacement---with an equal token share per source---until their prompt plus answer
-tokens sum to $B$; the model makes a single pass with a schedule fitted to that length. Training cost
-is reported as wall-clock GPU time and estimated FLOPs $\approx 4NT$ for $N$ model parameters and $T$
-tokens (forward plus activation gradients; the frozen base needs no weight gradients).
-\RQ{1} trains on the three-source mixture with $B \in \{0.25, 1, 4, 16\}$M tokens.
-\RQ{2} compares SQuAD-only against the three-source mixture at $B{=}4$M with three seeds (data
-sample and adapter initialisation), sharing all other settings.
+\paragraph{LoRA fine-tuning under a token budget.} Adapters of rank 16 ($\alpha{=}32$, dropout 0.05)
+are attached to all attention and MLP projections: 10.1M trainable parameters, 1.7\% of the 606M total.
+We use AdamW, learning rate $2{\times}10^{-4}$, 5\% warm-up and cosine decay, 16 sequences per
+optimizer step and the loss on answer tokens only. A budget $B$ means that examples are drawn without
+replacement---with an equal token share per source---until their prompt plus answer tokens sum to $B$;
+the model makes a single pass with a schedule fitted to that length. Cost is reported as wall-clock GPU
+time and estimated FLOPs $\approx 4NT$ for $N$ parameters and $T$ tokens (forward plus activation
+gradients; the frozen base needs no weight gradients). \RQ{1} trains on the three-source mixture with
+$B \in \{0.25, 1, 4, 16\}$M tokens. \RQ{2} compares SQuAD-only training with the three-source mixture
+at $B{=}4$M over three seeds (data sample and adapter initialisation); the mixture's seed-0 run is shared
+with \RQ{1}.
 
 \paragraph{Evaluation and statistics.} We report Exact Match (EM) and token-level F1 with the official
 SQuAD/MRQA normalisation, maximised over gold answers. Confidence intervals are 95\% percentile
-bootstrap intervals over questions~\citep{efron1993bootstrap}; system comparisons use a paired
-bootstrap over the same questions~\citep{koehn2004bootstrap} (10,000 resamples), with per-question
-scores averaged over seeds~\citep{dodge2020finetuning}. Errors are categorised automatically
-(\S\ref{sec:rq2}).
+bootstrap intervals over questions~\citep{efron1993bootstrap}. System comparisons use a paired bootstrap
+over the same 1,000 questions~\citep{koehn2004bootstrap} with 10,000 resamples, applied to per-question
+scores averaged over seeds; we also report the seed-to-seed standard deviation~\citep{dodge2020finetuning}.
 
-\paragraph{Inference benchmark.} \RQ{3} decodes the same 512 SQuAD prompts with the merged
-4M-token adapter in bf16 using HuggingFace \texttt{generate}~\citep{wolf2020transformers}:
-batch sizes 1--256 with length-sorted, left-padded batches and the KV cache on, plus ablations with
-unsorted batches, the KV cache disabled, and fp32/fp16 weights. Each configuration has one
-warm-up batch and three timed repeats; quality is recorded to confirm that batching does not change
-the answers.
+\paragraph{Inference benchmark.} \RQ{3} decodes 512 SQuAD prompts with the merged 16M-token adapter in
+bf16 using HuggingFace \texttt{generate}~\citep{wolf2020transformers}: batch sizes 1--256 with
+length-sorted, left-padded batches and the KV cache on, plus ablations with unsorted batches, the KV cache
+disabled (64-prompt subset) and fp16/fp32 weights. Each configuration has one warm-up batch and three
+timed repeats (run-to-run standard deviation below 0.3\% of throughput). Latency is the wall-clock time
+of the batch that contains a request.
 
-\paragraph{Hardware and software.} All final runs used one NVIDIA RTX PRO 6000 Blackwell
-Server Edition GPU (96~GB; Google Colab ``G4'') with PyTorch, Transformers~\citep{wolf2020transformers}
-and PEFT~\citep{peft}. The full pipeline, configurations, per-question predictions and logs are released
-with the paper.
+\paragraph{Hardware.} All final runs used one NVIDIA RTX PRO 6000 Blackwell Server Edition GPU (96~GB;
+Google Colab ``G4'') with PyTorch, Transformers~\citep{wolf2020transformers} and PEFT~\citep{peft}.
+All LoRA training for this paper took 48 GPU-minutes.
 
 \section{Results}
 \label{sec:results}
 
-%%RESULTS%%
+\subsection{RQ1: training efficiency}
+\label{sec:rq1}
+
+\begin{table}[t]
+  \caption{\textbf{Prompting vs.\ LoRA at increasing training-token budgets} (F1, 1,000 questions per set;
+  three-source mixture, seed 0). GPU-min is training time; dev loss is the mean answer-token loss on the
+  three held-out dev sets. Best per column in bold. 95\% bootstrap CIs are about $\pm$2--3 F1
+  (Appendix~\ref{app:extra}).}
+  \label{tab:rq1}
+  \centering
+  \small
+  \resizebox{\linewidth}{!}{\input{tables/rq1_f1.tex}}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/rq1_budget_curves.pdf}
+  \caption{\textbf{F1 and EM vs.\ LoRA training tokens} (log scale). Dotted and dashed horizontal lines
+  are the zero- and 3-shot baselines of the same colour.}
+  \label{fig:rq1}
+\end{figure}
+
+Table~\ref{tab:rq1} and Figure~\ref{fig:rq1} show that the largest gain comes from the first, smallest
+budget. Zero-shot, the model answers in full sentences (EM 2--8\%); three demonstrations raise mean F1
+to 41.4 ID and 34.3 OOD. Fine-tuning on only 250k tokens---578 questions and 20 seconds of training---lifts
+mean F1 to 70.6 ID ($+29.2$) and 62.6 OOD ($+28.3$), with gains on every set (SQuAD $+26.8$, BioASQ $+28.8$,
+DuoRC $+27.8$). Beyond that, returns are modest and roughly log-linear: averaged over the five sets, F1 rises
+from 67.4 (250k) to 68.4 (1M), 71.4 (4M) and 73.8 (16M), i.e.\ about 2 F1 per $4\times$ more tokens,
+so the 64$\times$ larger 16M budget adds 7.7 ID and 4.4 OOD points for 60$\times$ the compute. The OOD
+curve flattens earlier than the ID curve: BioASQ peaks at 4M (74.3 vs.\ 74.2 at 16M), whereas NewsQA,
+which has the longest answers, keeps improving ($56.5 \rightarrow 67.9$).
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}{0.49\linewidth}
+    \includegraphics[width=\linewidth]{figures/rq1_dev_loss.pdf}
+  \end{subfigure}\hfill
+  \begin{subfigure}{0.49\linewidth}
+    \includegraphics[width=\linewidth]{figures/rq1_f1_vs_gpu_minutes.pdf}
+  \end{subfigure}
+  \caption{\textbf{Left:} validation answer loss during training for each budget. \textbf{Right:} mean ID
+  and OOD F1 against training GPU-minutes.}
+  \label{fig:rq1cost}
+\end{figure}
+
+Validation loss decreases monotonically with the budget (0.84, 0.66, 0.56, 0.48 nats per answer token;
+3.23 before training) and orders the runs like mean ID F1, but not every set: TriviaQA F1 dips at 1M
+(70.0 vs.\ 73.0 at 250k) although its dev loss falls. Training throughput is constant at
+12.7--13.3k tokens/s across budgets (Table~\ref{tab:cost}), so cost is linear in tokens: the 16M run
+took 20 minutes and $3.9{\times}10^{16}$ FLOPs (Figure~\ref{fig:rq1cost}).
+
+\subsection{RQ2: does multi-source training generalize better?}
+\label{sec:rq2}
+
+\begin{table}[t]
+  \caption{\textbf{SQuAD-only (single) vs.\ SQuAD + NewsQA + TriviaQA (multi) at 4M training tokens.}
+  Mean $\pm$ std over 3 seeds; $\Delta$F1 is multi minus single with a 95\% paired-bootstrap CI over
+  questions (scores averaged over seeds) and a two-sided $p$-value.}
+  \label{tab:rq2}
+  \centering
+  \small
+  \resizebox{\linewidth}{!}{\input{tables/rq2.tex}}
+\end{table}
+
+Table~\ref{tab:rq2} answers \RQ{2} negatively for this model and budget. On the two unseen domains the
+multi-source mixture is statistically indistinguishable from SQuAD-only training: $\Delta$F1 $=-0.33$
+\ci{-1.40}{+0.77} on BioASQ and $+0.49$ \ci{-0.80}{+1.79} on DuoRC, and the mean OOD F1 is 66.2 for both
+conditions. The seed-to-seed standard deviation (0.6--1.2 F1) is as large as the differences, and
+individual seeds point both ways (Appendix~\ref{app:extra}): on DuoRC, one seed favours the mixture by
+$+2.4$ F1 ($p{=}0.01$) and the other two favour SQuAD by about 0.5. Only a single-seed comparison would
+have suggested a significant effect. In domain, the mixture helps a little on the two sources it adds
+(NewsQA $+1.2$, $p{=}0.07$; TriviaQA $+1.0$, $p{=}0.32$) and costs 1.2 F1 on SQuAD
+\ci{-2.07}{-0.29} ($p{=}0.008$), the only significant difference.
+
+\paragraph{Why no OOD gain?} Two observations explain part of it. First, equal tokens are not equal
+supervision: SQuAD passages are short, so the SQuAD-only run sees 16.8k questions and 102k answer tokens,
+versus 9.2k questions and 54k answer tokens for the mixture, and it trains 38\% faster (18.4k vs.\ 13.3k
+tokens/s). Second, the base model already reads well; what fine-tuning mostly teaches is the
+\emph{answer format}---short spans copied from the passage---and SQuAD alone teaches it. The error analysis
+(Table~\ref{tab:errors}) supports this: the mixture produces shorter answers (mean predicted length on
+TriviaQA 1.97 $\rightarrow$ 1.55 words, BioASQ 1.88 $\rightarrow$ 1.73) and fewer \emph{verbose} answers
+(TriviaQA 9.9\% $\rightarrow$ 3.9\%, BioASQ 10.6\% $\rightarrow$ 7.5\%), but these mostly turn into
+\emph{partial} matches rather than exact ones, and the dominant OOD failure---choosing the wrong span
+(13.6--13.8\% on BioASQ, 27.8--28.2\% on DuoRC)---is unchanged. A further 7\% of DuoRC answers fall outside
+the 768-token window and are unanswerable as posed.
+
+\paragraph{Validation loss is a poor cross-domain proxy.} The SQuAD-only adapters have a mean dev loss
+of 1.25 versus 0.55 for the mixture, driven by a TriviaQA dev loss of 2.68 vs.\ 0.89. Yet their TriviaQA
+F1 is only 1.0 point lower. TriviaQA gold answers are lower-cased aliases; the SQuAD-only model assigns
+low probability to that surface form but still produces the right entity, which F1 normalisation forgives.
+Model selection by pooled dev loss would therefore strongly, and wrongly, favour the mixture.
+
+\subsection{RQ3: inference efficiency}
+\label{sec:rq3}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/rq3_batch_sweep.pdf}
+  \caption{\textbf{Batch size vs.\ throughput, per-request latency and peak GPU memory} for the merged
+  16M-token adapter (bf16, 512 SQuAD prompts). The dashed line is the memory of the weights.}
+  \label{fig:rq3}
+\end{figure}
+
+\begin{table}[t]
+  \caption{\textbf{Inference batch sweep} (length-sorted, KV cache on, bf16). Latency is per batch, i.e.\ per
+  request. The unsorted column repeats the sweep with batches in random length order.}
+  \label{tab:rq3}
+  \centering
+  \small
+  \resizebox{\linewidth}{!}{\input{tables/rq3.tex}}
+\end{table}
+
+Throughput grows from 16.4 questions/s at batch size 1 to a maximum of 116.1 at batch size 64 ($7.1\times$)
+and then \emph{declines} to 102 (128) and 81 (256) (Figure~\ref{fig:rq3}, Table~\ref{tab:rq3}). The decline
+has two causes visible in the logs: with static batching every sequence waits for the longest answer in
+its batch, and at large batch sizes the length spread inside a batch grows, so padding rises to 30--48\%
+of prompt tokens even after sorting. Latency grows faster than throughput: a request waits 543~ms at batch
+64 (9$\times$ batch 1) and 3.1~s at batch 256. Peak memory grows almost linearly with batch size, from
+1.2~GB (weights 1.1~GB) to 7.0~GB at 64 and 24.6~GB at 256, dominated by the KV cache and prefill
+activations of 700-token prompts. Quality is unaffected: F1 stays within 90.3--90.9 across all batch sizes.
+
+Length sorting is the cheapest optimisation: unsorted batches carry 46--65\% padding at batch $\geq 16$ and
+lose up to 48\% of throughput (60.9 vs.\ 116.1 questions/s at batch 64), with their optimum shifting down to
+batch 32. Disabling the KV cache costs nothing at batch 1---answers are only about five tokens long, so
+decoding is dominated by the prefill---but is $1.7\times$ slower at batch 8 and $5.1\times$ slower at batch 32
+(Table~\ref{tab:rq3abl}). fp16 matches bf16 in speed and quality, while fp32 doubles memory and is
+$1.4\times$ slower at batch 32.
+
+\begin{table}[t]
+  \caption{\textbf{Inference ablations.} KV-cache comparisons use a 64-prompt subset; precision comparisons
+  use all 512 prompts. Speed-up is default (bf16, KV cache on) over the variant.}
+  \label{tab:rq3abl}
+  \centering
+  \small
+  \input{tables/rq3_ablation.tex}
+\end{table}
 
 \section{Discussion and limitations}
 \label{sec:discussion}
 
-%%DISCUSSION%%
+For a 0.6B model on context-grounded QA, the practical lesson is that adaptation compute is not the
+bottleneck: a few hundred examples close most of the gap to a much longer run, and a 16M-token run costs
+20 GPU-minutes. Because the gain beyond the smallest budget is log-linear and smaller out of domain, a
+practitioner with a fixed budget would do better spending it on evaluation, seeds and data quality than
+on longer training. Our \RQ{2} result cautions against assuming that data diversity transfers: at matched
+tokens, diversity traded answer-format calibration for in-domain accuracy without moving OOD F1, and with a
+single seed we would have drawn a different conclusion.
+
+\paragraph{Limitations.} We study one base model, one LoRA configuration and one prompt; larger models or
+other adapters may behave differently. Budgets up to 16M tokens are small compared with the full MRQA
+training sets, and diversity may matter more at larger budgets or with more distant sources. The equal-token
+design gives SQuAD-only training more questions and answer tokens, so ``diversity at equal supervision'' is
+not what \RQ{2} measures. Each set has 1,000 questions, so differences of about one F1 point are at the
+resolution of our CIs; EM/F1 penalise correct paraphrases, and overlap filtering uses exact normalised
+matches only. \RQ{3} uses HuggingFace \texttt{generate} with static batching on a single GPU type; serving
+engines with continuous batching and paged attention~\citep{kwon2023vllm} would shift the throughput optimum.
+Finally, our hypotheses were pre-registered against a T4 configuration and the final runs used a larger GPU
+profile (Appendix~\ref{app:hypotheses}).
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-%%CONCLUSION%%
+A 0.6B-parameter model becomes a strong extractive-style QA system with remarkably little fine-tuning:
+250k LoRA training tokens add about 29 F1 over few-shot prompting both in and out of domain, and further
+budget yields about 2 F1 per $4\times$ tokens. Mixing source datasets at a fixed token budget did not improve
+transfer to biomedical or movie-plot questions, and pooled validation loss would have suggested otherwise.
+At inference, length-sorted static batching at batch size 32--64 gives a $6.5$--$7\times$ throughput gain
+with sub-second latency and unchanged quality.
 
-\paragraph{Reproducibility.} All numbers in this paper are produced by
-\texttt{python -m cegqa.cli all --config configs/default.yaml --config configs/a100.yaml}
-from the released repository, which also writes the tables and figures used here. The notebooks in
-\texttt{notebooks/} run the same pipeline on Google Colab.
+\paragraph{Reproducibility.} Every number in this paper is produced by
+\texttt{python -m cegqa.cli all --config configs/default.yaml --config configs/a100.yaml} from the released
+repository, which also writes the tables and figures used here; \texttt{results/} contains the metrics,
+training logs, statistics and benchmark rows behind them. The notebooks in \texttt{notebooks/} run the same
+pipeline on Google Colab.
 
 \paragraph{Author contributions.} P1 built the data and evaluation pipeline (MRQA processing, passage-level
 splits, overlap checks, EM/F1 and prediction logging). P2 built the prompting baselines and the LoRA training
@@ -163,6 +340,90 @@ P5 led the analysis, figures and writing. All authors interpreted the results an
 
 \appendix
 
-%%APPENDIX%%
+\section{Data}
+\label{app:data}
+
+\begin{table}[h]
+  \caption{\textbf{Datasets after processing.} Train pool size, number of evaluation questions, mean passage
+  and answer length (words) and the share of eval questions whose gold answer occurs in the passage.}
+  \label{tab:data}
+  \centering
+  \small
+  \resizebox{\linewidth}{!}{\input{tables/data.tex}}
+\end{table}
+
+Before filtering, 552 of 4,212 NewsQA and 601 of 7,785 TriviaQA validation questions shared their passage
+with a training pool (the same source documents recur across MRQA splits); these were removed before
+sampling. After filtering no eval passage occurs in a training pool; 62 NewsQA questions still share their
+exact question text with a training question (generic questions such as ``What is his age?'').
+
+\section{Additional results}
+\label{app:extra}
+
+\begin{table}[h]
+  \caption{\textbf{RQ1 in Exact Match.} Same systems as Table~\ref{tab:rq1}.}
+  \centering
+  \small
+  \resizebox{\linewidth}{!}{\input{tables/rq1_em.tex}}
+\end{table}
+
+\begin{table}[h]
+  \caption{\textbf{Training cost per budget} (three-source mixture, seed 0, one RTX PRO 6000).}
+  \label{tab:cost}
+  \centering
+  \small
+  \input{tables/cost.tex}
+\end{table}
+
+\begin{table}[h]
+  \caption{\textbf{Error categories} (\% of questions, seed 0, 4M tokens). \emph{Verbose}: prediction contains a
+  gold answer plus extra words; \emph{wrong span}: F1 $=0$ and the prediction occurs in the passage;
+  \emph{truncated}: the gold answer is not in the visible 768-token window.}
+  \label{tab:errors}
+  \centering
+  \small
+  \resizebox{\linewidth}{!}{\input{tables/errors.tex}}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.75\linewidth]{figures/rq2_f1_bars.pdf}
+  \caption{\textbf{RQ2 F1 by eval set}, mean and standard deviation over three seeds.}
+\end{figure}
+
+\paragraph{Per-seed paired differences (multi $-$ single, F1).} SQuAD $-1.35$, $-1.15$, $-1.01$;
+NewsQA $+1.07$, $+2.29$, $+0.27$; TriviaQA $-1.09$, $+3.04$, $+1.10$; BioASQ $-0.32$, $-1.53$, $+0.85$;
+DuoRC $-0.41$, $-0.55$, $+2.42$. The seed-averaged comparison in Table~\ref{tab:rq2} is the pre-registered
+analysis.
+
+\section{Pre-registered hypotheses and outcomes}
+\label{app:hypotheses}
+
+Hypotheses were fixed in \texttt{docs/hypotheses.md} before the main runs, for a T4 configuration
+(budgets up to 4M, RQ2 at 1M, 500 questions per set). The final runs used the large-GPU profile
+(budgets up to 16M, RQ2 at 4M, 1,000 questions per set); the predictions are evaluated unchanged.
+
+\begin{itemize}
+  \item \textbf{H1a} (250k tokens beat the best prompting baseline on every ID set; $\geq$15 F1 on SQuAD):
+  \emph{supported} ($+26.8$ F1 on SQuAD; $+25.0$ NewsQA; $+35.8$ TriviaQA).
+  \item \textbf{H1b} (diminishing returns; 1M$\rightarrow$4M adds less than half of 0.25M$\rightarrow$1M):
+  \emph{not supported}. Gains per $4\times$ budget are roughly constant (+1.0, +3.0, +2.4 mean F1), i.e.\ F1 is
+  close to linear in log tokens, which is the functional form we predicted, but without the predicted decay.
+  \item \textbf{H1c} (dev loss decreases monotonically and ranks runs like dev F1): \emph{supported} for mean ID F1;
+  TriviaQA alone is non-monotonic.
+  \item \textbf{H1d} (tokens/s within $\pm$10\% across budgets): \emph{supported} (12.7--13.3k tokens/s).
+  \item \textbf{H2a} (multi-source improves mean OOD F1 by 2--5 points with a CI excluding 0 on at least one OOD set):
+  \emph{not supported} ($+0.08$ mean OOD F1; both CIs include 0).
+  \item \textbf{H2b} (gain larger on DuoRC than BioASQ): directionally consistent ($+0.49$ vs.\ $-0.33$) but not significant.
+  \item \textbf{H2c} (SQuAD-only within $\pm$2 F1 on SQuAD): \emph{supported} (SQuAD-only better by 1.2).
+  \item \textbf{H2d} (multi-source mainly reduces not-in-passage and wrong-span errors): \emph{not supported}; it
+  mainly reduces verbose answers, and wrong-span errors are unchanged.
+  \item \textbf{H3a} ($\geq 8\times$ throughput, saturating at batch 32--64): \emph{partly supported} ($7.1\times$, peak at 64).
+  \item \textbf{H3b} (latency at batch 64 $\geq 3\times$ batch 1): \emph{supported} ($9.0\times$).
+  \item \textbf{H3c} (memory roughly linear in batch size, below 16~GB up to 64): \emph{supported} (7.0~GB at 64).
+  \item \textbf{H3d} (quality within $\pm$0.5 F1; unsorted $\geq$15\% slower at large batches; KV cache off $\geq 2\times$
+  slower): \emph{supported} for quality ($\pm$0.3) and sorting (48\% slower at 64); \emph{partly} for the KV cache
+  ($5.1\times$ at batch 32, but no difference at batch 1 because answers are short).
+\end{itemize}
 
 \end{document}

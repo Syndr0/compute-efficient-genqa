@@ -1,0 +1,47 @@
+{
+  "run": "lora_squad+newsqa+triviaqa_1M_s0",
+  "sources": [
+    "squad",
+    "newsqa",
+    "triviaqa"
+  ],
+  "token_budget": 1000000,
+  "seed": 0,
+  "examples": 2300,
+  "sample_stats": {
+    "squad": {
+      "examples": 1404,
+      "tokens": 333430
+    },
+    "newsqa": {
+      "examples": 499,
+      "tokens": 333578
+    },
+    "triviaqa": {
+      "examples": 397,
+      "tokens": 333939
+    }
+  },
+  "tokens_seen": 1000947,
+  "target_tokens": 13370,
+  "optimizer_steps": 144,
+  "train_time_s": 76.0228,
+  "tokens_per_s": 13166.40487,
+  "gpu_hours": 0.02112,
+  "est_cost_usd": 0.02112,
+  "est_train_flops": 2426865923653632,
+  "peak_mem_gb": 18.34024,
+  "params": {
+    "total": 606142464,
+    "trainable": 10092544
+  },
+  "initial_dev_loss": 3.22931,
+  "final_dev_loss": 0.66153,
+  "final_dev_loss_by_source": {
+    "squad": 0.33439,
+    "newsqa": 0.57961,
+    "triviaqa": 1.07058
+  },
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "gpu_mem_gb": 94.97
+}

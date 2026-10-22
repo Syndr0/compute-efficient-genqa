@@ -1,0 +1,7 @@
+{
+  "adapter": "/content/drive/MyDrive/cegqa_outputs_a100/runs/lora_squad+newsqa+triviaqa_16M_s0/adapter",
+  "source": "squad",
+  "n": 512,
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "gpu_mem_gb": 94.97
+}

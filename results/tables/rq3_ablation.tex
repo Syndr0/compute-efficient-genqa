@@ -1,0 +1,13 @@
+\begin{tabular}{lrrrrr}
+\toprule
+Variant vs.\ default & Batch & Ex/s (variant) & Ex/s (default) & Default speed-up & Peak mem (GB) \\
+\midrule
+KV cache off vs.\ on & 1 & 15.44 & 15.38 & 1.0$\times$ & 1.14 / 1.19 \\
+KV cache off vs.\ on & 8 & 26.39 & 45.49 & 1.7$\times$ & 1.24 / 1.66 \\
+KV cache off vs.\ on & 32 & 17.27 & 87.77 & 5.1$\times$ & 1.59 / 3.26 \\
+float16 vs.\ bfloat16 & 1 & 16.50 & 16.44 & 1.0$\times$ & 1.22 / 1.22 \\
+float16 vs.\ bfloat16 & 32 & 107.85 & 107.60 & 1.0$\times$ & 4.06 / 4.06 \\
+float32 vs.\ bfloat16 & 1 & 15.52 & 16.44 & 1.1$\times$ & 2.48 / 1.22 \\
+float32 vs.\ bfloat16 & 32 & 76.26 & 107.60 & 1.4$\times$ & 8.09 / 4.06 \\
+\bottomrule
+\end{tabular}
